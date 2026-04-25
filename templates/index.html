@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Krabbystrap</title>
+<style>
+/* ─────────────────────────────────────────────────────────────────────────
+   WPF UI dark-theme exact colour tokens
+   Source: Fluent 2 / lepo.co/wpfui – dark palette
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  /* application background (Mica → solid approximation) */
+  --app-bg:              #202020;
+  /* card / control fill */
+  --ctrl-fill:           rgba(255,255,255,0.061);   /* ControlFillColorDefault   */
+  --ctrl-fill-sec:       rgba(255,255,255,0.084);   /* ControlFillColorSecondary */
+  --ctrl-fill-ter:       rgba(255,255,255,0.031);   /* ControlFillColorTertiary  */
+  /* card border */
+  --ctrl-stroke:         rgba(255,255,255,0.093);   /* ControlElevationBorder    */
+  /* text */
+  --text-pri:            rgba(255,255,255,1.00);
+  --text-sec:            rgba(255,255,255,0.609);
+  --text-ter:            rgba(255,255,255,0.384);
+  --text-dis:            rgba(255,255,255,0.282);
+  /* navigation */
+  --nav-bg:              #1C1C1C;
+  --nav-indicator:       #C9B827;                   /* accent – Krabby yellow    */
+  --nav-item-hover:      rgba(255,255,255,0.059);
+  --nav-item-active-bg:  rgba(201,184,39,0.15);
+  /* accent */
+  --accent:              #C9B827;
+  --accent-hover:        #b5a523;
+  --accent-press:        #9d8f1e;
+  --accent-text:         #0f0f0f;
+  /* status bar */
+  --statusbar-bg:        #1a1a1a;
+  /* misc */
+  --border-subtle:       rgba(255,255,255,0.078);
+  --radius:              4px;
+  --radius-lg:           6px;
+  --toggle-off:          #605E5C;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  height:100%;background:var(--app-bg);
+  color:var(--text-pri);
+  font-family:"Segoe UI","Noto Sans",system-ui,sans-serif;
+  font-size:13px;overflow:hidden;
+}
+
+/* ── Shell layout ────────────────────────────────────────────── */
+.shell{display:flex;flex-direction:column;width:100vw;height:100vh}
+.body {
+  display:grid;
+  grid-template-columns:200px 1fr;
+  flex:1;overflow:hidden;min-height:0;
+}
+
+/* ── NavigationFluent sidebar ────────────────────────────────── */
+.nav{
+  grid-column:1;
+  background:var(--nav-bg);
+  border-right:1px solid var(--border-subtle);
+  display:flex;flex-direction:column;
+  padding:8px 6px;
+  overflow-y:auto;overflow-x:hidden;
+}
+.nav-header{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 8px 14px;
+  border-bottom:1px solid var(--border-subtle);
+  margin-bottom:8px;
+}
+.nav-header img{width:26px;height:26px;border-radius:var(--radius)}
+.nav-header-name{font-size:14px;font-weight:600;color:var(--text-pri)}
+
+/* nav item – mirrors WPF UI NavigationItem */
+.nav-item{
+  position:relative;
+  display:flex;align-items:center;gap:10px;
+  height:36px;padding:0 10px;
+  border-radius:var(--radius-lg);
+  cursor:pointer;
+  color:var(--text-sec);
+  font-size:13px;
+  transition:background 0.1s,color 0.1s;
+  user-select:none;
+}
+.nav-item:hover{background:var(--nav-item-hover);color:var(--text-pri)}
+.nav-item.active{
+  background:var(--nav-item-active-bg);
+  color:var(--text-pri);font-weight:600;
+}
+/* left accent indicator bar (like WPF UI) */
+.nav-item.active::before{
+  content:'';position:absolute;
+  left:-6px;top:50%;transform:translateY(-50%);
+  width:3px;height:16px;
+  background:var(--accent);border-radius:0 2px 2px 0;
+}
+.nav-icon{
+  width:16px;height:16px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0.75;
+}
+.nav-icon svg{width:16px;height:16px;fill:currentColor}
+.nav-separator{height:1px;background:var(--border-subtle);margin:8px 4px}
+.nav-footer{padding-top:2px}
+
+/* ── Content area ────────────────────────────────────────────── */
+.content{
+  grid-column:2;
+  display:flex;flex-direction:column;
+  overflow:hidden;min-width:0;
+  padding:12px 24px 0 16px;
+}
+
+/* Breadcrumb (ui:Breadcrumb) */
+.breadcrumb{
+  font-size:12px;color:var(--text-ter);
+  margin-bottom:6px;padding-left:2px;
+  display:flex;align-items:center;gap:5px;
+  flex-shrink:0;
+}
+.breadcrumb-sep{color:var(--text-dis)}
+.breadcrumb-cur{color:var(--text-sec)}
+
+/* scrollable page frame */
+.frame{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  max-width:780px;
+  padding-right:4px;
+}
+.frame::-webkit-scrollbar{width:4px}
+.frame::-webkit-scrollbar-track{background:transparent}
+.frame::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.13);border-radius:2px}
+
+/* page – mirrors UiPage with Scrollable=True / StackPanel Margin="0,0,14,14" */
+.page{display:none;padding:0 14px 14px 0}
+.page.active{display:block}
+
+/* ── StatusBar ───────────────────────────────────────────────── */
+.statusbar{
+  flex-shrink:0;
+  height:48px;
+  background:var(--statusbar-bg);
+  border-top:1px solid var(--border-subtle);
+  display:flex;align-items:center;
+  padding:0 14px;gap:8px;
+}
+.statusbar-left{display:flex;align-items:center;gap:10px;flex:1}
+.statusbar-right{display:flex;align-items:center;gap:6px}
+.statusbar-label{font-size:14px;color:var(--text-pri)}
+
+/* ── Buttons (ui:Button) ─────────────────────────────────────── */
+.btn{
+  height:32px;padding:0 14px;
+  border-radius:var(--radius);
+  font-size:13px;font-weight:500;
+  cursor:pointer;border:none;outline:none;
+  transition:background 0.1s;
+}
+.btn-primary{
+  background:var(--accent);color:var(--accent-text);
+  border:1px solid rgba(0,0,0,.3);
+}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:active{background:var(--accent-press)}
+.btn-default{
+  background:var(--ctrl-fill);color:var(--text-pri);
+  border:1px solid var(--ctrl-stroke);
+}
+.btn-default:hover{background:var(--ctrl-fill-sec)}
+
+/* ── ui:Card (used by OptionControl) ─────────────────────────── */
+/* Margin="0,8,0,0" – exactly 8px top gap */
+.card{
+  background:var(--ctrl-fill);
+  border:1px solid var(--ctrl-stroke);
+  border-radius:var(--radius-lg);
+  margin-top:8px;
+  transition:background 0.08s;
+}
+.card:hover{background:var(--ctrl-fill-sec)}
+
+/* ── OptionControl ───────────────────────────────────────────── */
+.opt{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:16px;
+  padding:12px 16px;
+}
+.opt-header{font-size:14px;color:var(--text-pri);font-weight:400}
+.opt-desc{
+  font-size:12px;color:var(--text-ter);
+  margin-top:2px;line-height:1.4;max-width:560px;
+}
+.opt-ctrl{display:flex;align-items:center;flex-shrink:0}
+
+/* ── Section headers (TextBlock FontSize=20/16 FontWeight=Medium) */
+.sec-title{
+  font-size:20px;font-weight:500;
+  color:var(--text-pri);
+  margin:16px 0 0;display:block;
+}
+.sec-title:first-child{margin-top:0}
+.sec-sub{
+  font-size:16px;font-weight:500;
+  color:var(--text-pri);
+  margin:16px 0 0;display:block;
+}
+/* page description (FontSize=14, TextFillColorSecondary) */
+.page-desc{
+  font-size:14px;color:var(--text-sec);
+  margin-bottom:0;display:block;
+}
+
+/* ── ui:InfoBar ──────────────────────────────────────────────── */
+.infobar{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 14px;border-radius:var(--radius-lg);
+  margin-top:8px;font-size:12px;line-height:1.5;
+}
+.infobar-warn{
+  background:rgba(252,197,19,0.10);
+  border:1px solid rgba(252,197,19,0.30);
+  color:var(--text-sec);
+}
+.infobar-warn .ib-icon{color:#FCC513;flex-shrink:0;display:flex;align-items:center;margin-top:1px}
+.infobar-err{
+  background:rgba(255,80,50,0.10);
+  border:1px solid rgba(255,80,50,0.30);
+  color:var(--text-sec);
+}
+.infobar-err .ib-icon{color:#FF5032;flex-shrink:0;display:flex;align-items:center;margin-top:1px}
+
+/* ── CardAction (ui:CardAction) ──────────────────────────────── */
+.card-action{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;
+  background:var(--ctrl-fill);
+  border:1px solid var(--ctrl-stroke);
+  border-radius:var(--radius-lg);
+  margin-top:8px;
+  cursor:pointer;
+  transition:background 0.08s;
+  text-decoration:none;color:inherit;
+}
+.card-action:hover{background:var(--ctrl-fill-sec)}
+.ca-icon{font-size:22px;flex-shrink:0;width:32px;text-align:center;color:var(--accent)}
+.ca-title{font-size:14px;color:var(--text-pri)}
+.ca-desc{font-size:12px;color:var(--text-ter);margin-top:2px}
+.ca-arr{margin-left:auto;color:var(--text-dis);font-size:18px;line-height:1}
+
+/* ── Toggle switch (ui:ToggleSwitch) ─────────────────────────── */
+.toggle{position:relative;width:44px;height:22px;cursor:pointer;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.t-track{
+  position:absolute;inset:0;border-radius:11px;
+  background:var(--toggle-off);
+  transition:background 0.15s;
+}
+.toggle input:checked+.t-track{background:var(--accent)}
+.t-knob{
+  position:absolute;
+  top:3px;left:3px;
+  width:16px;height:16px;
+  background:white;border-radius:50%;
+  transition:transform 0.15s;
+  pointer-events:none;
+}
+.toggle input:checked~.t-knob{transform:translateX(22px)}
+
+/* ── Select / ComboBox ───────────────────────────────────────── */
+.combo{
+  background:var(--ctrl-fill);
+  border:1px solid var(--ctrl-stroke);
+  border-radius:var(--radius);
+  color:var(--text-pri);
+  padding:5px 10px;font-size:13px;
+  cursor:pointer;outline:none;min-width:140px;
+}
+.combo:focus{border-color:var(--accent)}
+.combo option{background:#2a2a2a}
+
+/* ── TextBox ─────────────────────────────────────────────────── */
+.textbox{
+  background:var(--ctrl-fill);
+  border:1px solid var(--ctrl-stroke);
+  border-radius:var(--radius);
+  color:var(--text-pri);
+  padding:5px 10px;font-size:13px;
+  outline:none;
+}
+.textbox:focus{border-color:var(--accent)}
+.textbox::placeholder{color:var(--text-ter)}
+
+/* ── FFlags table ────────────────────────────────────────────── */
+.ff-toolbar{display:flex;gap:8px;margin-top:8px;margin-bottom:0}
+.ff-search{
+  flex:1;background:var(--ctrl-fill);
+  border:1px solid var(--ctrl-stroke);
+  border-radius:var(--radius);
+  color:var(--text-pri);
+  padding:6px 12px;font-size:13px;outline:none;
+}
+.ff-search:focus{border-color:var(--accent)}
+.ff-search::placeholder{color:var(--text-ter)}
+
+.ff-wrap{
+  margin-top:8px;
+  background:var(--ctrl-fill);
+  border:1px solid var(--ctrl-stroke);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+}
+table.ff-tbl{width:100%;border-collapse:collapse}
+table.ff-tbl th{
+  background:rgba(0,0,0,0.2);
+  color:var(--text-sec);font-size:12px;font-weight:600;
+  padding:8px 14px;text-align:left;
+  border-bottom:1px solid var(--border-subtle);
+}
+table.ff-tbl td{
+  padding:7px 14px;border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:13px;color:var(--text-pri);
+}
+table.ff-tbl tr:last-child td{border-bottom:none}
+table.ff-tbl tr:hover td{background:var(--ctrl-fill-sec)}
+table.ff-tbl td input{
+  background:transparent;border:none;
+  color:var(--text-pri);font-size:13px;
+  width:100%;outline:none;padding:0;font-family:inherit;
+}
+table.ff-tbl td input:focus{
+  background:var(--ctrl-fill-sec);
+  border-radius:var(--radius);padding:2px 6px;
+}
+.ff-del{
+  background:transparent;border:none;
+  color:var(--text-dis);cursor:pointer;
+  font-size:13px;padding:2px 6px;border-radius:var(--radius);
+}
+.ff-del:hover{background:rgba(239,68,68,0.15);color:#ef4444}
+
+/* ── About ───────────────────────────────────────────────────── */
+.about-hero{display:flex;align-items:center;gap:20px;margin-bottom:16px}
+.about-hero img{width:68px;height:68px;border-radius:10px}
+.about-name{font-size:22px;font-weight:700}
+.about-sub{font-size:13px;color:var(--text-ter);margin-top:3px}
+.about-rows{
+  background:var(--ctrl-fill);border:1px solid var(--ctrl-stroke);
+  border-radius:var(--radius-lg);overflow:hidden;margin-top:0;
+}
+.about-row{
+  display:flex;padding:11px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.about-row:last-child{border-bottom:none}
+.about-k{color:var(--text-sec);flex:1;font-size:13px}
+.about-v{color:var(--text-pri);font-size:13px}
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:56px;left:50%;
+  transform:translateX(-50%) translateY(8px);
+  background:var(--accent);color:white;
+  padding:8px 22px;border-radius:var(--radius-lg);
+  font-size:13px;font-weight:600;
+  opacity:0;transition:opacity 0.18s,transform 0.18s;
+  pointer-events:none;z-index:999;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="body">
+
+    <!-- ══ NavigationFluent ══════════════════════════════════════ -->
+    <nav class="nav">
+      <div class="nav-header">
+        <img src="/assets/krabby.png" alt="">
+        <span class="nav-header-name">Krabbystrap</span>
+      </div>
+
+      <!-- Add28 -->
+      <div class="nav-item active" data-p="integrations" onclick="go('integrations',this)">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v8h8a1 1 0 1 1 0 2h-8v8a1 1 0 1 1-2 0v-8H3a1 1 0 1 1 0-2h8V3a1 1 0 0 1 1-1z"/></svg></span>Integrations
+      </div>
+      <!-- PlaySettings20 -->
+      <div class="nav-item" data-p="behaviour" onclick="go('behaviour',this)">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 4.5a1 1 0 0 1 1.5-.87l13 7.5a1 1 0 0 1 0 1.74l-13 7.5A1 1 0 0 1 5 19.5v-15z"/></svg></span>Behaviour
+      </div>
+      <!-- CloudArchive20 -->
+      <div class="nav-item" data-p="deployment" onclick="go('deployment',this)">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M6.5 20A5.5 5.5 0 0 1 4.2 9.5a7 7 0 0 1 13.6 0A5.5 5.5 0 0 1 17.5 20H6.5zm5-10.5a1 1 0 0 0-1 1v5.59l-1.8-1.8a1 1 0 1 0-1.4 1.42l3.5 3.5a1 1 0 0 0 1.4 0l3.5-3.5a1 1 0 0 0-1.4-1.42l-1.8 1.8V10.5a1 1 0 0 0-1-1z"/></svg></span>Deployment
+      </div>
+      <!-- Flag24 -->
+      <div class="nav-item" data-p="fastflags" onclick="go('fastflags',this)">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 3a1 1 0 0 1 1 1v.5h12.28a1 1 0 0 1 .74 1.67L15.5 10l3.52 3.83A1 1 0 0 1 18.28 15H6v5a1 1 0 1 1-2 0V4a1 1 0 0 1 1-1z"/></svg></span>Fast Flags
+      </div>
+      <!-- Settings20 -->
+      <div class="nav-item" data-p="globalsettings" onclick="go('globalsettings',this)">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0-8c.55 0 1.02.4 1.1.94l.24 1.72a7.04 7.04 0 0 1 1.73 1l1.6-.8a1.11 1.11 0 0 1 1.38.32l1.1 1.9c.28.48.15 1.09-.3 1.41l-1.44 1.02c.04.33.06.66.06.99s-.02.66-.06.99l1.44 1.02c.45.32.58.93.3 1.41l-1.1 1.9a1.11 1.11 0 0 1-1.38.32l-1.6-.8a7.04 7.04 0 0 1-1.73 1l-.24 1.72A1.11 1.11 0 0 1 12 22c-.55 0-1.02-.4-1.1-.94l-.24-1.72a7.04 7.04 0 0 1-1.73-1l-1.6.8a1.11 1.11 0 0 1-1.38-.32l-1.1-1.9a1.11 1.11 0 0 1 .3-1.41l1.44-1.02A7.2 7.2 0 0 1 6.5 12c0-.33.02-.66.06-.99L5.12 9.99a1.11 1.11 0 0 1-.3-1.41l1.1-1.9A1.11 1.11 0 0 1 7.3 6.36l1.6.8a7.04 7.04 0 0 1 1.73-1l.24-1.72A1.11 1.11 0 0 1 12 2z"/></svg></span>Global Settings
+      </div>
+
+      <div class="nav-separator"></div>
+      <div class="nav-footer">
+        <!-- FoodFish24 -->
+        <div class="nav-item" data-p="about" onclick="go('about',this)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M16.5 4C13 4 9.5 6.5 8.1 9H4a1 1 0 0 0-.7 1.7L5 12.5l-1.7 1.8A1 1 0 0 0 4 16h4.1C9.5 18.5 13 21 16.5 21 21 21 22 17 22 12.5S21 4 16.5 4zm0 2C19.5 6 20 9 20 12.5S19.5 19 16.5 19c-2.7 0-5.7-2.1-6.9-5H13a1 1 0 1 0 0-2H9.3a8.3 8.3 0 0 1 0-3H13a1 1 0 1 0 0-2H9.6C10.8 8.1 13.8 6 16.5 6zm1 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg></span>About
+        </div>
+      </div>
+    </nav>
+
+    <!-- ══ Content ═══════════════════════════════════════════════ -->
+    <div class="content">
+
+      <!-- Breadcrumb (ui:Breadcrumb) -->
+      <div class="breadcrumb">
+        <span>Krabbystrap</span>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-cur" id="bc">Integrations</span>
+      </div>
+
+      <!-- Frame -->
+      <div class="frame">
+
+        <!-- ── Integrations ─────────────────────────────── -->
+        <div class="page active" id="p-integrations">
+          <span class="page-desc">Configure Discord Rich Presence and other integrations.</span>
+
+          <span class="sec-title">Discord Rich Presence</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Show game activity</div>
+              <div class="opt-desc">Show your current Roblox game in your Discord status.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="discord_rpc_enabled" checked><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Allow activity joining</div>
+              <div class="opt-desc">Allow Discord friends to join your game directly via the join button.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="discord_rpc_show_join_button"><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <span class="sec-title">Miscellaneous</span>
+
+          <div class="infobar infobar-err">
+            <span class="ib-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2a10 10 0 1 1 0 20A10 10 0 0 1 12 2zm0 2a8 8 0 1 0 0 16A8 8 0 0 0 12 4zm0 9.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0-6a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0V8.5a1 1 0 0 1 1-1z"/></svg></span>
+            <span>Enabling gamepad support may cause unexpected input behaviour in some Roblox games.</span>
+          </div>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Gamepad / controller support</div>
+              <div class="opt-desc">Allow Roblox to request gamepad permission.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="allow_gamepad_permission"><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Server location indicator</div>
+              <div class="opt-desc">Show which region the server is located in while playing.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="server_location_indicator_enabled"><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ── Behaviour ────────────────────────────────── -->
+        <div class="page" id="p-behaviour">
+          <span class="page-desc">Control how Sober behaves when launching and leaving games.</span>
+
+          <span class="sec-title">Session</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Close on leave</div>
+              <div class="opt-desc">Automatically close Sober when you leave a Roblox game.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="close_on_leave"><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Use console experience</div>
+              <div class="opt-desc">Launch Roblox in console / TV mode.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="use_console_experience"><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <span class="sec-title">libsecret</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Use libsecret</div>
+              <div class="opt-desc">Store credentials using the system keyring via libsecret.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="use_libsecret"><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ── Deployment ────────────────────────────────── -->
+        <div class="page" id="p-deployment">
+          <span class="page-desc">Configure display and rendering settings for Sober.</span>
+
+          <span class="sec-title">Graphics</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Force OpenGL</div>
+              <div class="opt-desc">Use OpenGL instead of Vulkan/EGL. Fixes EGL crashes on Wayland (recommended for AMD/Intel).</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="use_opengl"><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">HiDPI / display scaling</div>
+              <div class="opt-desc">Enable high-DPI rendering for sharp visuals on high-resolution screens.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="enable_hidpi"><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Graphics optimisation mode</div>
+              <div class="opt-desc">Sober's internal graphics preset.</div>
+            </div>
+            <div class="opt-ctrl">
+              <select class="combo" id="graphics_optimization_mode">
+                <option value="off">Off</option>
+                <option value="balanced">Balanced</option>
+                <option value="performance">Performance</option>
+              </select>
+            </div>
+          </div></div>
+
+          <span class="sec-title">System</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">GameMode</div>
+              <div class="opt-desc">Enable Linux GameMode for prioritised CPU/GPU performance while playing.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="enable_gamemode" checked><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Touch mode</div>
+              <div class="opt-desc">Enable touch / tablet input for Roblox.</div>
+            </div>
+            <div class="opt-ctrl">
+              <select class="combo" id="touch_mode">
+                <option value="off">Off</option>
+                <option value="auto">Auto</option>
+                <option value="on">On</option>
+              </select>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ── Fast Flags ────────────────────────────────── -->
+        <div class="page" id="p-fastflags">
+          <span class="page-desc">Directly modify Roblox engine fast flags. Double-click any row to edit.</span>
+
+          <div class="infobar infobar-warn">
+            <span class="ib-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0v-4a1 1 0 0 1 1-1zm0 8.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg></span>
+            <span>Only use FFlags you fully understand. Invalid or made-up flags can prevent Roblox from launching. The Sober team will not provide support for bugs caused by FFlag usage.</span>
+          </div>
+
+          <div class="card-action" onclick="focusSearch()">
+            <span class="ca-icon">✏️</span>
+            <div>
+              <div class="ca-title">Open FFlag editor</div>
+              <div class="ca-desc">Add, edit and remove fast flags manually</div>
+            </div>
+            <span class="ca-arr">›</span>
+          </div>
+
+          <span class="sec-title">Presets</span>
+          <span class="sec-sub">Geometry</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Texture quality</div>
+              <div class="opt-desc">Override the Roblox texture quality level.</div>
+            </div>
+            <div class="opt-ctrl">
+              <select class="combo" id="ff_texture" onchange="applyTexture(this.value)">
+                <option value="off">Default</option>
+                <option value="0">Level 0 (Potato)</option>
+                <option value="1">Level 1 (Low)</option>
+                <option value="2">Level 2 (Medium)</option>
+                <option value="3">Level 3 (High)</option>
+              </select>
+            </div>
+          </div></div>
+
+          <span class="sec-sub">Rendering</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Lighting technology</div>
+              <div class="opt-desc">Override the Roblox lighting rendering pipeline.</div>
+            </div>
+            <div class="opt-ctrl">
+              <select class="combo" id="ff_lighting" onchange="applyLighting(this.value)">
+                <option value="voxel">Voxel Lighting (Phase 1)</option>
+                <option value="shadowmap">Shadowmap Lighting (Phase 2)</option>
+                <option value="future">Future Lighting (Phase 3)</option>
+              </select>
+            </div>
+          </div></div>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Disable ads</div>
+              <div class="opt-desc">Prevent Roblox from serving in-experience advertisements.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="ff_noads" checked><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Disable bubble chat</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="ff_nobubble"><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+
+          <!-- raw editor -->
+          <span class="sec-sub">Advanced</span>
+          <div class="ff-toolbar">
+            <input class="ff-search" id="ff-search" placeholder="Search flags…" oninput="filterFlags()">
+            <button class="btn btn-primary" onclick="addFlag()">+ Add flag</button>
+            <button class="btn btn-default" onclick="removeSelected()">Remove</button>
+          </div>
+          <div class="ff-wrap">
+            <table class="ff-tbl">
+              <thead><tr><th style="width:55%">Flag name</th><th>Value</th><th style="width:36px"></th></tr></thead>
+              <tbody id="ff-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Global Settings ───────────────────────────── -->
+        <div class="page" id="p-globalsettings">
+          <span class="page-desc">Fine-tune in-game Roblox settings via fast flags.</span>
+
+          <span class="sec-title">Rendering</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">FPS cap</div>
+              <div class="opt-desc">Set the TaskScheduler target framerate (9999 = uncapped).</div>
+            </div>
+            <div class="opt-ctrl">
+              <input class="textbox" type="number" id="ff_fps" value="9999" min="30" max="9999" style="width:90px">
+            </div>
+          </div></div>
+
+          <span class="sec-title">User Interface</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">Font size padding</div>
+              <div class="opt-desc">Adjust the Roblox UI font size offset (FIntFontSizePadding).</div>
+            </div>
+            <div class="opt-ctrl">
+              <input class="textbox" type="number" id="ff_fontsize" value="1" min="0" max="20" style="width:80px">
+            </div>
+          </div></div>
+
+          <span class="sec-title">Other</span>
+
+          <div class="card"><div class="opt">
+            <div class="opt-left">
+              <div class="opt-header">GPU light culling</div>
+              <div class="opt-desc">Enable fast GPU-based light culling for improved performance.</div>
+            </div>
+            <div class="opt-ctrl">
+              <label class="toggle"><input type="checkbox" id="ff_lightculling" checked><span class="t-track"></span><span class="t-knob"></span></label>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ── About ─────────────────────────────────────── -->
+        <div class="page" id="p-about">
+          <div class="about-hero">
+            <img src="/assets/krabby.png" alt="Sober">
+            <div>
+              <div class="about-name">Krabbystrap</div>
+              <div class="about-sub">Version 1.0.0 · Sober 1.6.7</div>
+            </div>
+          </div>
+
+          <span class="page-desc">A Bloxstrap/Fishstrap-inspired launcher for Sober on Linux.</span>
+
+          <div class="about-rows" style="margin-top:12px">
+            <div class="about-row"><span class="about-k">Built with</span><span class="about-v">Python 3 · Flask · PySide6 · WebEngine</span></div>
+            <div class="about-row"><span class="about-k">Roblox runtime</span><span class="about-v">Sober by VinegarHQ</span></div>
+            <div class="about-row"><span class="about-k">UI inspired by</span><span class="about-v">Bloxstrap · Fishstrap</span></div>
+            <div class="about-row"><span class="about-k">Config location</span><span class="about-v">~/.var/app/org.vinegarhq.Sober/config/sober/</span></div>
+            <div class="about-row"><span class="about-k">License</span><span class="about-v">MIT</span></div>
+          </div>
+
+          <div class="infobar infobar-warn" style="margin-top:12px">
+            <span class="ib-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0v-4a1 1 0 0 1 1-1zm0 8.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg></span>
+            <span>Krabbystrap is not affiliated with Roblox Corporation, Bloxstrap, Fishstrap, or VinegarHQ.</span>
+          </div>
+        </div>
+
+      </div><!-- /frame -->
+    </div><!-- /content -->
+  </div><!-- /body -->
+
+  <!-- ══ StatusBar ════════════════════════════════════════════════ -->
+  <div class="statusbar">
+    <div class="statusbar-left">
+      <label class="toggle" style="margin-right:4px">
+        <input type="checkbox" id="test_mode">
+        <span class="t-track"></span><span class="t-knob"></span>
+      </label>
+      <span class="statusbar-label">Test Mode</span>
+    </div>
+    <div class="statusbar-right">
+      <button class="btn btn-primary" onclick="saveAndLaunch()">Save &amp; Launch</button>
+      <button class="btn btn-primary" onclick="saveConfig()">Save</button>
+      <button class="btn btn-default" onclick="window.close ? window.close() : history.back()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── page titles ──────────────────────────────────────────────────
+const TITLES = {
+  integrations:'Integrations', behaviour:'Behaviour',
+  deployment:'Deployment', fastflags:'Fast Flags',
+  globalsettings:'Global Settings', about:'About'
+};
+
+let config = {};
+let selRow = null;
+
+// ── navigation ───────────────────────────────────────────────────
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('p-'+id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('bc').textContent = TITLES[id] || id;
+}
+
+// ── init ─────────────────────────────────────────────────────────
+async function init() {
+  const r = await fetch('/api/config');
+  config = await r.json();
+  populateToggles();
+  populateFlagsTable(config.fflags || {});
+  populatePresets(config.fflags || {});
+}
+
+function populateToggles() {
+  const map = {
+    'discord_rpc_enabled': true,
+    'discord_rpc_show_join_button': false,
+    'allow_gamepad_permission': false,
+    'server_location_indicator_enabled': false,
+    'close_on_leave': false,
+    'use_console_experience': false,
+    'use_libsecret': false,
+    'use_opengl': false,
+    'enable_hidpi': false,
+    'enable_gamemode': true,
+  };
+  Object.entries(map).forEach(([k, def]) => {
+    const el = document.getElementById(k);
+    if (el) el.checked = config[k] !== undefined ? !!config[k] : def;
+  });
+  setCombo('graphics_optimization_mode', config.graphics_optimization_mode || 'balanced');
+  setCombo('touch_mode', config.touch_mode || 'off');
+}
+
+function populatePresets(ff) {
+  const tq = ff['DFIntTextureQualityOverride'];
+  setCombo('ff_texture', tq !== undefined ? String(tq) : 'off');
+
+  if (ff['FFlagDebugForceFutureIsBrightPhase3']) setCombo('ff_lighting','future');
+  else if (ff['FFlagDebugForceFutureIsBrightPhase2']) setCombo('ff_lighting','shadowmap');
+  else setCombo('ff_lighting','voxel');
+
+  const fps = ff['DFIntTaskSchedulerTargetFps'];
+  if (fps !== undefined) document.getElementById('ff_fps').value = fps;
+
+  const fs = ff['FIntFontSizePadding'];
+  if (fs !== undefined) document.getElementById('ff_fontsize').value = fs;
+
+  const noads = document.getElementById('ff_noads');
+  if (noads) noads.checked = ff['FFlagAdServiceEnabled'] === false;
+  const nob = document.getElementById('ff_nobubble');
+  if (nob) nob.checked = ff['FFlagEnableBubbleChatFromChatService2'] === false;
+  const lc = document.getElementById('ff_lightculling');
+  if (lc) lc.checked = ff['FFlagFastGPULightCulling3'] === true;
+}
+
+function setCombo(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  for (let i=0;i<el.options.length;i++) {
+    if (el.options[i].value === val) { el.selectedIndex = i; return; }
+  }
+}
+
+// ── flags table ──────────────────────────────────────────────────
+function populateFlagsTable(ff, q='') {
+  const tb = document.getElementById('ff-tbody');
+  tb.innerHTML = '';
+  Object.entries(ff).forEach(([k,v]) => {
+    if (q && !k.toLowerCase().includes(q.toLowerCase())) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="fk" value="${esc(k)}"></td>
+      <td><input type="text" class="fv" value="${esc(String(v))}"></td>
+      <td><button class="ff-del" onclick="this.closest('tr').remove()">✕</button></td>`;
+    tr.onclick = () => selRow = tr;
+    tb.appendChild(tr);
+  });
+}
+function filterFlags() {
+  populateFlagsTable(collectFlags(), document.getElementById('ff-search').value);
+}
+function collectFlags() {
+  const ff = {};
+  document.querySelectorAll('#ff-tbody tr').forEach(tr => {
+    const k = tr.querySelector('.fk')?.value.trim();
+    const v = tr.querySelector('.fv')?.value.trim();
+    if (!k) return;
+    if (v==='true') ff[k]=true;
+    else if (v==='false') ff[k]=false;
+    else if (!isNaN(v)&&v!=='') ff[k]=Number(v);
+    else ff[k]=v;
+  });
+  return ff;
+}
+function addFlag() {
+  const tb = document.getElementById('ff-tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="fk" value="FlagName"></td>
+    <td><input type="text" class="fv" value="true"></td>
+    <td><button class="ff-del" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);
+  tr.querySelector('.fk').focus(); tr.querySelector('.fk').select();
+}
+function removeSelected() { if(selRow){selRow.remove();selRow=null;} }
+function focusSearch() { document.getElementById('ff-search').focus(); }
+
+// ── preset appliers ──────────────────────────────────────────────
+function applyTexture(val) {
+  const ff = collectFlags();
+  if (val==='off') { delete ff['DFFlagTextureQualityOverrideEnabled']; delete ff['DFIntTextureQualityOverride']; }
+  else { ff['DFFlagTextureQualityOverrideEnabled']=true; ff['DFIntTextureQualityOverride']=parseInt(val); }
+  populateFlagsTable(ff);
+}
+function applyLighting(val) {
+  const ff = collectFlags();
+  ff['DFFlagDebugRenderForceTechnologyVoxel']  = val==='voxel';
+  ff['FFlagDebugForceFutureIsBrightPhase2']    = val==='shadowmap';
+  ff['FFlagDebugForceFutureIsBrightPhase3']    = val==='future';
+  populateFlagsTable(ff);
+}
+
+// ── collect & save ───────────────────────────────────────────────
+function buildConfig() {
+  ['discord_rpc_enabled','discord_rpc_show_join_button','allow_gamepad_permission',
+   'server_location_indicator_enabled','close_on_leave','use_console_experience',
+   'use_libsecret','use_opengl','enable_hidpi','enable_gamemode'].forEach(k => {
+    const el = document.getElementById(k);
+    if (el) config[k] = el.checked;
+  });
+  config.graphics_optimization_mode = document.getElementById('graphics_optimization_mode').value;
+  config.touch_mode = document.getElementById('touch_mode').value;
+
+  let ff = collectFlags();
+  const fps = parseInt(document.getElementById('ff_fps').value);
+  if (!isNaN(fps)) ff['DFIntTaskSchedulerTargetFps'] = fps;
+  const fs = parseInt(document.getElementById('ff_fontsize').value);
+  if (!isNaN(fs)) ff['FIntFontSizePadding'] = fs;
+  if (document.getElementById('ff_noads').checked) ff['FFlagAdServiceEnabled']=false; else delete ff['FFlagAdServiceEnabled'];
+  if (document.getElementById('ff_nobubble').checked) ff['FFlagEnableBubbleChatFromChatService2']=false; else delete ff['FFlagEnableBubbleChatFromChatService2'];
+  if (document.getElementById('ff_lightculling').checked) ff['FFlagFastGPULightCulling3']=true; else delete ff['FFlagFastGPULightCulling3'];
+  config.fflags = ff;
+  return config;
+}
+
+async function saveConfig() {
+  await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(buildConfig())});
+  showToast('✓  Settings saved');
+}
+async function saveAndLaunch() {
+  await saveConfig();
+  await fetch('/api/launch',{method:'POST'});
+  showToast('▶  Launching Roblox…');
+}
+
+// ── ui helpers ───────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 2300);
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1050,46 +1050,46 @@ function mkCard(m, type) {
   const who  = m.creator || '';
   const installed = m._installed;
 
-  card.innerHTML = \`
-    \${m.image
-      ? \`<img class="mk-thumb" src="\${esc(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">\`
-      : \`<div class="mk-thumb-ph">📦</div>\`}
+  card.innerHTML = `
+    ${m.image
+      ? `<img class="mk-thumb" src="${esc(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="mk-thumb-ph">📦</div>`}
     <div class="mk-body">
-      <div class="mk-title">\${esc(name)}</div>
-      \${desc ? \`<div class="mk-desc">\${esc(desc)}</div>\` : ''}
-      \${who  ? \`<div class="mk-creator">by \${esc(who)}</div>\` : ''}
+      <div class="mk-title">${esc(name)}</div>
+      ${desc ? `<div class="mk-desc">${esc(desc)}</div>` : ''}
+      ${who  ? `<div class="mk-creator">by ${esc(who)}</div>` : ''}
       <div class="mk-footer">
-        <span class="mk-badge \${sbClass}">\${sbLabel}</span>
+        <span class="mk-badge ${sbClass}">${sbLabel}</span>
         <div style="display:flex;gap:4px">
-          \${installed
-            ? \`<button class="mk-btn-apply" onclick='mkApply(\${JSON.stringify(name)},"\${type}")'>Apply</button>
-               <button class="mk-btn installed" onclick='mkRemove(\${JSON.stringify(name)},"\${type}",this.closest(".mk-card"))'>Remove</button>\`
-            : \`<button class="mk-btn" onclick='mkInstall(\${JSON.stringify(name)},"\${type}",this)'>Install</button>\`
+          ${installed
+            ? `<button class="mk-btn-apply" onclick='mkApply(${JSON.stringify(name)},"${type}")'>Apply</button>
+               <button class="mk-btn installed" onclick='mkRemove(${JSON.stringify(name)},"${type}",this.closest(".mk-card"))'>Remove</button>`
+            : `<button class="mk-btn" onclick='mkInstall(${JSON.stringify(name)},"${type}",this)'>Install</button>`
           }
         </div>
       </div>
-    </div>\`;
+    </div>`;
   return card;
 }
 
 function mkFflagCard(m) {
   const card = document.createElement('div');
   card.className = 'mk-card';
-  const preview = m.preview ? Object.entries(m.preview).slice(0,3).map(([k,v])=>\`\${k}: \${v}\`).join('\n') : '';
-  card.innerHTML = \`
-    \${m.image
-      ? \`<img class="mk-thumb" src="\${esc(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">\`
-      : \`<div class="mk-thumb-ph">⚑</div>\`}
+  const preview = m.preview ? Object.entries(m.preview).slice(0,3).map(([k,v])=>`${k}: ${v}`).join('\n') : '';
+  card.innerHTML = `
+    ${m.image
+      ? `<img class="mk-thumb" src="${esc(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="mk-thumb-ph">⚑</div>`}
     <div class="mk-body">
-      <div class="mk-title">\${esc(m.title||'Untitled')}</div>
-      \${m.desc ? \`<div class="mk-desc">\${esc(m.desc)}</div>\` : ''}
-      \${preview ? \`<div class="mk-ff-preview">\${esc(preview)}…</div>\` : ''}
-      \${m.by ? \`<div class="mk-creator">by \${esc(m.by)}</div>\` : ''}
+      <div class="mk-title">${esc(m.title||'Untitled')}</div>
+      ${m.desc ? `<div class="mk-desc">${esc(m.desc)}</div>` : ''}
+      ${preview ? `<div class="mk-ff-preview">${esc(preview)}…</div>` : ''}
+      ${m.by ? `<div class="mk-creator">by ${esc(m.by)}</div>` : ''}
       <div class="mk-footer">
         <span></span>
-        <button class="mk-btn" onclick='mkApplyFflag(\${JSON.stringify(m.install)},this)'>Apply</button>
+        <button class="mk-btn" onclick='mkApplyFflag(${JSON.stringify(m.install)},this)'>Apply</button>
       </div>
-    </div>\`;
+    </div>`;
   return card;
 }
 

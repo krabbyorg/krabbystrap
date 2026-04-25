@@ -6,6 +6,19 @@ A [Bloxstrap](https://github.com/bloxstraplabs/bloxstrap) / [Fishstrap](https://
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/home.png" width="360" alt="Home dialog"/>
+  &nbsp;
+  <img src="screenshots/splash.png" width="360" alt="Launch splash"/>
+</p>
+<p align="center">
+  <img src="screenshots/settings.png" width="740" alt="Settings UI"/>
+</p>
+
+---
+
 ## Features
 
 - Home launcher — choose **Launch** or **Settings** on startup

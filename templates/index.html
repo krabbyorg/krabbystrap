@@ -139,6 +139,7 @@ html,body{
 /* page – mirrors UiPage with Scrollable=True / StackPanel Margin="0,0,14,14" */
 .page{display:none;padding:0 14px 14px 0}
 .page.active{display:block}
+#p-mods.active{display:flex;padding:0 14px 0 0;overflow:hidden}
 
 /* ── StatusBar ───────────────────────────────────────────────── */
 .statusbar{
@@ -345,6 +346,93 @@ table.ff-tbl td input:focus{
 }
 .ff-del:hover{background:rgba(239,68,68,0.15);color:#ef4444}
 
+/* ── Browse Mods ─────────────────────────────────────────────── */
+.mods-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-shrink:0}
+.mods-search{
+  flex:1;height:32px;
+  background:var(--ctrl-fill);border:1px solid var(--ctrl-stroke);
+  border-radius:var(--radius);color:var(--text-pri);
+  padding:0 10px;font-size:13px;outline:none;font-family:inherit;
+}
+.mods-search:focus{border-color:var(--accent)}
+.mods-search::placeholder{color:var(--text-ter)}
+.mods-filter{display:flex;gap:4px}
+.mods-chip{
+  height:28px;padding:0 12px;border-radius:14px;
+  background:var(--ctrl-fill);border:1px solid var(--ctrl-stroke);
+  color:var(--text-sec);font-size:12px;cursor:pointer;
+  transition:background 0.1s,color 0.1s;
+}
+.mods-chip:hover{background:var(--ctrl-fill-sec);color:var(--text-pri)}
+.mods-chip.active{background:var(--accent);border-color:transparent;color:var(--accent-text);font-weight:600}
+.mods-refresh{
+  height:32px;padding:0 12px;border-radius:var(--radius);
+  background:var(--ctrl-fill);border:1px solid var(--ctrl-stroke);
+  color:var(--text-sec);font-size:13px;cursor:pointer;
+  transition:background 0.1s;
+}
+.mods-refresh:hover{background:var(--ctrl-fill-sec);color:var(--text-pri)}
+.mods-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:10px;
+}
+.mod-card{
+  background:var(--ctrl-fill);
+  border:1px solid var(--ctrl-stroke);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:border-color 0.15s,background 0.15s;
+}
+.mod-card:hover{background:var(--ctrl-fill-sec);border-color:rgba(255,255,255,0.15)}
+.mod-thumb{
+  width:100%;aspect-ratio:16/9;
+  object-fit:cover;background:#181818;
+  display:block;
+}
+.mod-thumb-placeholder{
+  width:100%;aspect-ratio:16/9;
+  background:linear-gradient(135deg,#242424,#1a1a1a);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-dis);font-size:28px;
+}
+.mod-body{padding:10px 12px 12px;flex:1;display:flex;flex-direction:column;gap:6px}
+.mod-title{font-size:13px;font-weight:600;color:var(--text-pri);line-height:1.3}
+.mod-desc{font-size:11px;color:var(--text-ter);line-height:1.4;flex:1}
+.mod-creator{font-size:11px;color:var(--text-dis)}
+.mod-footer{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.mod-badge{
+  font-size:10px;font-weight:600;padding:2px 7px;
+  border-radius:10px;text-transform:uppercase;letter-spacing:.4px;
+}
+.mod-badge-stable{background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.25)}
+.mod-badge-unstable{background:rgba(251,146,60,0.15);color:#fb923c;border:1px solid rgba(251,146,60,0.25)}
+.mod-badge-unknown{background:var(--ctrl-fill-ter);color:var(--text-dis);border:1px solid var(--ctrl-stroke)}
+.mod-btn{
+  height:26px;padding:0 12px;
+  background:var(--accent);color:var(--accent-text);
+  border:none;border-radius:var(--radius);
+  font-size:11px;font-weight:600;cursor:pointer;
+  transition:background 0.1s;
+}
+.mod-btn:hover{background:var(--accent-hover)}
+.mods-empty{
+  grid-column:1/-1;text-align:center;
+  padding:48px;color:var(--text-ter);font-size:13px;
+}
+.mods-loading{
+  display:flex;align-items:center;justify-content:center;
+  gap:10px;padding:48px;color:var(--text-ter);font-size:13px;
+}
+.mods-spinner{
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.1);
+  border-top-color:var(--accent);
+  animation:spin 0.7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* ── About ───────────────────────────────────────────────────── */
 .about-hero{display:flex;align-items:center;gap:20px;margin-bottom:16px}
 .about-hero img{width:68px;height:68px;border-radius:10px}
@@ -407,6 +495,11 @@ table.ff-tbl td input:focus{
       <!-- Settings20 -->
       <div class="nav-item" data-p="globalsettings" onclick="go('globalsettings',this)">
         <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0-8c.55 0 1.02.4 1.1.94l.24 1.72a7.04 7.04 0 0 1 1.73 1l1.6-.8a1.11 1.11 0 0 1 1.38.32l1.1 1.9c.28.48.15 1.09-.3 1.41l-1.44 1.02c.04.33.06.66.06.99s-.02.66-.06.99l1.44 1.02c.45.32.58.93.3 1.41l-1.1 1.9a1.11 1.11 0 0 1-1.38.32l-1.6-.8a7.04 7.04 0 0 1-1.73 1l-.24 1.72A1.11 1.11 0 0 1 12 22c-.55 0-1.02-.4-1.1-.94l-.24-1.72a7.04 7.04 0 0 1-1.73-1l-1.6.8a1.11 1.11 0 0 1-1.38-.32l-1.1-1.9a1.11 1.11 0 0 1 .3-1.41l1.44-1.02A7.2 7.2 0 0 1 6.5 12c0-.33.02-.66.06-.99L5.12 9.99a1.11 1.11 0 0 1-.3-1.41l1.1-1.9A1.11 1.11 0 0 1 7.3 6.36l1.6.8a7.04 7.04 0 0 1 1.73-1l.24-1.72A1.11 1.11 0 0 1 12 2z"/></svg></span>Global Settings
+      </div>
+
+      <!-- Package/Browse icon -->
+      <div class="nav-item" data-p="mods" onclick="go('mods',this)">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2l9 4.5V17L12 21.5 3 17V6.5L12 2zm0 2.3L5 7.8v8.4l7 3.5 7-3.5V7.8L12 4.3zm0 2.2l5 2.5v5l-5 2.5-5-2.5V9L12 6.5zm0 2.1L9 10v4l3 1.5 3-1.5v-4l-3-1.5z"/></svg></span>Browse Mods
       </div>
 
       <div class="nav-separator"></div>
@@ -719,6 +812,31 @@ table.ff-tbl td input:focus{
           </div></div>
         </div>
 
+        <!-- ── Browse Mods ───────────────────────────────── -->
+        <div class="page" id="p-mods" style="display:none;height:100%;flex-direction:column">
+          <span class="page-desc" style="margin-bottom:10px">
+            Browse and install community mods for Roblox. Mod list from
+            <a href="#" onclick="return false" style="color:var(--accent)">Lution Marketplace</a>.
+          </span>
+
+          <div class="mods-toolbar">
+            <input class="mods-search" id="mod-search" placeholder="Search mods…" oninput="filterMods()">
+            <div class="mods-filter">
+              <button class="mods-chip active" data-filter="all"    onclick="setFilter('all',this)">All</button>
+              <button class="mods-chip"        data-filter="stable" onclick="setFilter('stable',this)">Stable</button>
+              <button class="mods-chip"        data-filter="unknown" onclick="setFilter('unknown',this)">Unknown</button>
+            </div>
+            <button class="mods-refresh" onclick="loadMods(true)" title="Reload from network">↺</button>
+          </div>
+
+          <div id="mods-container" style="flex:1;overflow-y:auto;overflow-x:hidden">
+            <div class="mods-loading" id="mods-loading">
+              <div class="mods-spinner"></div>Loading mods…
+            </div>
+            <div class="mods-grid" id="mods-grid" style="display:none"></div>
+          </div>
+        </div>
+
         <!-- ── About ─────────────────────────────────────── -->
         <div class="page" id="p-about">
           <div class="about-hero">
@@ -773,7 +891,7 @@ table.ff-tbl td input:focus{
 const TITLES = {
   integrations:'Integrations', behaviour:'Behaviour',
   deployment:'Deployment', fastflags:'Fast Flags',
-  globalsettings:'Global Settings', about:'About'
+  globalsettings:'Global Settings', mods:'Browse Mods', about:'About'
 };
 
 let config = {};
@@ -783,9 +901,100 @@ let selRow = null;
 function go(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('p-'+id).classList.add('active');
+  const pg = document.getElementById('p-'+id);
+  pg.classList.add('active');
+  if (id === 'mods') {
+    pg.style.display = 'flex';
+    if (!window._modsLoaded) loadMods(false);
+  } else {
+    pg.style.display = '';
+  }
   el.classList.add('active');
   document.getElementById('bc').textContent = TITLES[id] || id;
+}
+
+// ── Browse Mods ───────────────────────────────────────────────────
+let _allMods = [];
+let _activeFilter = 'all';
+window._modsLoaded = false;
+
+async function loadMods(refresh) {
+  const grid = document.getElementById('mods-grid');
+  const loading = document.getElementById('mods-loading');
+  grid.style.display = 'none';
+  loading.style.display = 'flex';
+  try {
+    const r = await fetch('/api/mods' + (refresh ? '?refresh=1' : ''));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    _allMods = await r.json();
+    window._modsLoaded = true;
+    renderMods();
+  } catch(e) {
+    loading.innerHTML = '⚠ Failed to load mods — check your connection.';
+  }
+}
+
+function renderMods() {
+  const grid = document.getElementById('mods-grid');
+  const loading = document.getElementById('mods-loading');
+  const q = (document.getElementById('mod-search').value || '').toLowerCase();
+  const filtered = _allMods.filter(m => {
+    const matchFilter = _activeFilter === 'all' || (m.sb || 'unknown') === _activeFilter;
+    const matchQ = !q || (m.title||'').toLowerCase().includes(q) ||
+                         (m.body||'').toLowerCase().includes(q) ||
+                         (m.creator||'').toLowerCase().includes(q);
+    return matchFilter && matchQ;
+  });
+
+  grid.innerHTML = '';
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="mods-empty">No mods match your search.</div>';
+  } else {
+    filtered.forEach(m => grid.appendChild(modCard(m)));
+  }
+  loading.style.display = 'none';
+  grid.style.display = 'grid';
+}
+
+function modCard(m) {
+  const card = document.createElement('div');
+  card.className = 'mod-card';
+
+  const sbMap = {stable:'mod-badge-stable', unstable:'mod-badge-unstable', unknown:'mod-badge-unknown'};
+  const sbLabel = {stable:'Stable', unstable:'Unstable', unknown:'Unknown'};
+  const sb = m.sb || 'unknown';
+
+  card.innerHTML = `
+    ${m.image
+      ? `<img class="mod-thumb" src="${m.image}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="mod-thumb-placeholder">📦</div>`}
+    <div class="mod-body">
+      <div class="mod-title">${esc(m.title||'Untitled')}</div>
+      <div class="mod-desc">${esc(m.body||'')}</div>
+      <div class="mod-creator">by ${esc(m.creator||'Unknown')}</div>
+      <div class="mod-footer">
+        <span class="mod-badge ${sbMap[sb]||sbMap.unknown}">${sbLabel[sb]||'Unknown'}</span>
+        <button class="mod-btn" onclick="openMod(${JSON.stringify(m.title)})">View</button>
+      </div>
+    </div>`;
+  return card;
+}
+
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function openMod(title) {
+  const m = _allMods.find(x => x.title === title);
+  if (!m) return;
+  showToast(`Opening "${m.title}" — search it on Gamebanana or GitHub.`);
+}
+
+function filterMods() { renderMods(); }
+
+function setFilter(f, el) {
+  _activeFilter = f;
+  document.querySelectorAll('.mods-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderMods();
 }
 
 // ── init ─────────────────────────────────────────────────────────

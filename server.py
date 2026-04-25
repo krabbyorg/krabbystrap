@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, send_file, send_from_directory
-import json, subprocess, re
+import json, subprocess, re, urllib.request
 from pathlib import Path
 
 app = Flask(__name__)
@@ -55,6 +55,22 @@ def do_launch():
 @app.route("/api/info", methods=["GET"])
 def info():
     return jsonify({"sober_version": SOBER_VER, "app_version": "1.0.0"})
+
+
+_MODS_CACHE = None
+
+@app.route("/api/mods", methods=["GET"])
+def get_mods():
+    global _MODS_CACHE
+    refresh = request.args.get("refresh") == "1"
+    if _MODS_CACHE is None or refresh:
+        try:
+            url = "https://raw.githubusercontent.com/Wookhq/Lution-Marketplace/main/Assets/Mods/content.json"
+            with urllib.request.urlopen(url, timeout=8) as r:
+                _MODS_CACHE = json.loads(r.read().decode())
+        except Exception as e:
+            return jsonify({"error": str(e)}), 502
+    return jsonify(_MODS_CACHE)
 
 
 if __name__ == "__main__":

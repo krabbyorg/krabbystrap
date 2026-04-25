@@ -9,12 +9,12 @@ A [Bloxstrap](https://github.com/bloxstraplabs/bloxstrap) / [Fishstrap](https://
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/home.png" width="360" alt="Home dialog"/>
+  <img src="screenshots/home.png" width="440" alt="Home dialog"/>
   &nbsp;
-  <img src="screenshots/splash.png" width="360" alt="Launch splash"/>
+  <img src="screenshots/splash.png" width="440" alt="Launch splash"/>
 </p>
 <p align="center">
-  <img src="screenshots/settings.png" width="740" alt="Settings UI"/>
+  <img src="screenshots/settings.png" width="900" alt="Settings UI"/>
 </p>
 
 ---

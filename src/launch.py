@@ -12,8 +12,6 @@ ROOT        = Path(__file__).parent.parent
 ASSETS      = ROOT / "assets"
 LAUNCH_FLAG = Path(tempfile.gettempdir()) / "krabbystrap_launch.flag"
 
-# ── styles ─────────────────────────────────────────────────────────────────
-
 _BASE = """
 QDialog { background: #202020; }
 QLabel#title {
@@ -54,7 +52,6 @@ QProgressBar {
 QProgressBar::chunk { background: #C9B827; border-radius: 2px; }
 """
 
-# ── helpers ────────────────────────────────────────────────────────────────
 
 def _sober_running() -> bool:
     try:
@@ -91,8 +88,6 @@ def _make_brand(parent_layout, icon_size=54, spacing=36):
     parent_layout.addLayout(brand)
     parent_layout.addSpacing(spacing)
 
-
-# ── HomeDialog ─────────────────────────────────────────────────────────────
 
 class HomeDialog(QDialog):
     def __init__(self):
@@ -135,11 +130,9 @@ class HomeDialog(QDialog):
         self.accept()
 
 
-# ── LaunchSplash ───────────────────────────────────────────────────────────
-
 class LaunchSplash(QDialog):
     TIMEOUT  = 60
-    MIN_SHOW = 3.0   # always visible for at least this many seconds
+    MIN_SHOW = 3.0
 
     def __init__(self):
         super().__init__()
@@ -206,7 +199,6 @@ class LaunchSplash(QDialog):
             return
 
         if found:
-            # detected but still within MIN_SHOW — show full bar, wait
             self.bar.setValue(100)
             self.status_lbl.setText("Launched!")
             return
@@ -225,8 +217,6 @@ class LaunchSplash(QDialog):
         else:
             self.status_lbl.setText("Still loading…")
 
-
-# ── settings window ────────────────────────────────────────────────────────
 
 def wait_ready(url, timeout=12):
     t = time.time()
@@ -281,8 +271,6 @@ def open_settings(app):
     server.wait()
     sys.exit(code)
 
-
-# ── entry point ────────────────────────────────────────────────────────────
 
 def main():
     app = QApplication(sys.argv)

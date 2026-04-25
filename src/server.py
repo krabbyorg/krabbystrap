@@ -4,7 +4,7 @@ import hashlib, mimetypes
 from pathlib import Path
 from urllib.parse import quote as urlquote
 
-ROOT = Path(__file__).parent.parent   # project root
+ROOT = Path(__file__).parent.parent
 
 app = Flask(__name__, root_path=str(ROOT))
 
@@ -29,7 +29,6 @@ MARKETPLACE_URLS = {
     "fflags_content": GH_RAW + "Assets/FastFlag/index.json",
 }
 
-# ── helpers ────────────────────────────────────────────────────────────────
 
 def _fetch(url: str, timeout=10) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": "Krabbystrap/1.0"})
@@ -42,8 +41,6 @@ def _gh_url(path: str) -> str:
 
 def _fetch_json(url: str) -> list | dict:
     return json.loads(_fetch(url))
-
-# ── sober config ───────────────────────────────────────────────────────────
 
 def load_config():
     if not SOBER_CONFIG.exists():
@@ -58,8 +55,6 @@ def load_config():
 def save_config(cfg: dict):
     SOBER_CONFIG.write_text(json.dumps(cfg, indent=4), encoding="utf-8")
 
-# ── installed tracking ─────────────────────────────────────────────────────
-
 def _load_installed() -> dict:
     KRABBY_DIR.mkdir(parents=True, exist_ok=True)
     if not INSTALLED_DB.exists():
@@ -72,8 +67,6 @@ def _load_installed() -> dict:
 def _save_installed(db: dict):
     INSTALLED_DB.write_text(json.dumps(db, indent=2))
 
-# ── in-memory cache ────────────────────────────────────────────────────────
-
 _cache: dict = {}
 _cache_lock = threading.Lock()
 
@@ -83,7 +76,6 @@ def _get_cached(key: str, url: str, refresh=False):
             _cache[key] = _fetch_json(url)
         return _cache[key]
 
-# ── Flask routes ───────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -118,8 +110,6 @@ def do_launch():
 @app.route("/api/info", methods=["GET"])
 def info():
     return jsonify({"sober_version": SOBER_VER, "app_version": "1.0.0"})
-
-# ── Marketplace ────────────────────────────────────────────────────────────
 
 @app.route("/api/marketplace/all", methods=["GET"])
 def marketplace_all():

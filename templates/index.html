@@ -346,92 +346,104 @@ table.ff-tbl td input:focus{
 }
 .ff-del:hover{background:rgba(239,68,68,0.15);color:#ef4444}
 
-/* ── Browse Mods ─────────────────────────────────────────────── */
-.mods-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-shrink:0}
-.mods-search{
+/* ── Marketplace ─────────────────────────────────────────────── */
+.mk-tabs{display:flex;gap:2px;margin-bottom:12px;flex-shrink:0;border-bottom:1px solid var(--border-subtle);padding-bottom:0}
+.mk-tab{
+  padding:8px 16px;font-size:13px;cursor:pointer;
+  color:var(--text-sec);border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:color 0.1s,border-color 0.1s;
+}
+.mk-tab:hover{color:var(--text-pri)}
+.mk-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.mk-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-shrink:0}
+.mk-search{
   flex:1;height:32px;
   background:var(--ctrl-fill);border:1px solid var(--ctrl-stroke);
   border-radius:var(--radius);color:var(--text-pri);
   padding:0 10px;font-size:13px;outline:none;font-family:inherit;
 }
-.mods-search:focus{border-color:var(--accent)}
-.mods-search::placeholder{color:var(--text-ter)}
-.mods-filter{display:flex;gap:4px}
-.mods-chip{
+.mk-search:focus{border-color:var(--accent)}
+.mk-search::placeholder{color:var(--text-ter)}
+.mk-filter{display:flex;gap:4px}
+.mk-chip{
   height:28px;padding:0 12px;border-radius:14px;
   background:var(--ctrl-fill);border:1px solid var(--ctrl-stroke);
   color:var(--text-sec);font-size:12px;cursor:pointer;
   transition:background 0.1s,color 0.1s;
 }
-.mods-chip:hover{background:var(--ctrl-fill-sec);color:var(--text-pri)}
-.mods-chip.active{background:var(--accent);border-color:transparent;color:var(--accent-text);font-weight:600}
-.mods-refresh{
-  height:32px;padding:0 12px;border-radius:var(--radius);
+.mk-chip:hover{background:var(--ctrl-fill-sec);color:var(--text-pri)}
+.mk-chip.active{background:var(--accent);border-color:transparent;color:var(--accent-text);font-weight:600}
+.mk-refresh{
+  height:32px;width:32px;border-radius:var(--radius);
   background:var(--ctrl-fill);border:1px solid var(--ctrl-stroke);
-  color:var(--text-sec);font-size:13px;cursor:pointer;
-  transition:background 0.1s;
+  color:var(--text-sec);font-size:15px;cursor:pointer;
+  transition:background 0.1s;display:flex;align-items:center;justify-content:center;
 }
-.mods-refresh:hover{background:var(--ctrl-fill-sec);color:var(--text-pri)}
-.mods-grid{
+.mk-refresh:hover{background:var(--ctrl-fill-sec);color:var(--text-pri)}
+.mk-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
   gap:10px;
 }
-.mod-card{
+.mk-card{
   background:var(--ctrl-fill);
   border:1px solid var(--ctrl-stroke);
   border-radius:var(--radius-lg);
-  overflow:hidden;
-  display:flex;flex-direction:column;
+  overflow:hidden;display:flex;flex-direction:column;
   transition:border-color 0.15s,background 0.15s;
 }
-.mod-card:hover{background:var(--ctrl-fill-sec);border-color:rgba(255,255,255,0.15)}
-.mod-thumb{
-  width:100%;aspect-ratio:16/9;
-  object-fit:cover;background:#181818;
-  display:block;
-}
-.mod-thumb-placeholder{
+.mk-card:hover{background:var(--ctrl-fill-sec);border-color:rgba(255,255,255,0.15)}
+.mk-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;background:#181818;display:block}
+.mk-thumb-ph{
   width:100%;aspect-ratio:16/9;
   background:linear-gradient(135deg,#242424,#1a1a1a);
   display:flex;align-items:center;justify-content:center;
-  color:var(--text-dis);font-size:28px;
+  color:var(--text-dis);font-size:26px;
 }
-.mod-body{padding:10px 12px 12px;flex:1;display:flex;flex-direction:column;gap:6px}
-.mod-title{font-size:13px;font-weight:600;color:var(--text-pri);line-height:1.3}
-.mod-desc{font-size:11px;color:var(--text-ter);line-height:1.4;flex:1}
-.mod-creator{font-size:11px;color:var(--text-dis)}
-.mod-footer{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
-.mod-badge{
-  font-size:10px;font-weight:600;padding:2px 7px;
-  border-radius:10px;text-transform:uppercase;letter-spacing:.4px;
-}
-.mod-badge-stable{background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.25)}
-.mod-badge-unstable{background:rgba(251,146,60,0.15);color:#fb923c;border:1px solid rgba(251,146,60,0.25)}
-.mod-badge-unknown{background:var(--ctrl-fill-ter);color:var(--text-dis);border:1px solid var(--ctrl-stroke)}
-.mod-btn{
-  height:26px;padding:0 12px;
+.mk-body{padding:10px 12px 12px;flex:1;display:flex;flex-direction:column;gap:5px}
+.mk-title{font-size:13px;font-weight:600;color:var(--text-pri);line-height:1.3}
+.mk-desc{font-size:11px;color:var(--text-ter);line-height:1.4;flex:1}
+.mk-creator{font-size:11px;color:var(--text-dis)}
+.mk-footer{display:flex;align-items:center;justify-content:space-between;margin-top:5px;gap:4px}
+.mk-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.4px}
+.mk-stable  {background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)}
+.mk-unstable{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.25)}
+.mk-unknown {background:var(--ctrl-fill-ter);color:var(--text-dis);border:1px solid var(--ctrl-stroke)}
+.mk-btn{
+  height:26px;padding:0 10px;
   background:var(--accent);color:var(--accent-text);
   border:none;border-radius:var(--radius);
   font-size:11px;font-weight:600;cursor:pointer;
-  transition:background 0.1s;
+  transition:background 0.1s;white-space:nowrap;
 }
-.mod-btn:hover{background:var(--accent-hover)}
-.mods-empty{
-  grid-column:1/-1;text-align:center;
-  padding:48px;color:var(--text-ter);font-size:13px;
+.mk-btn:hover{background:var(--accent-hover)}
+.mk-btn.installed{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)}
+.mk-btn.installed:hover{background:rgba(239,68,68,.15);color:#ef4444;border-color:rgba(239,68,68,.25)}
+.mk-btn-apply{
+  height:26px;padding:0 10px;
+  background:var(--ctrl-fill);color:var(--text-sec);
+  border:1px solid var(--ctrl-stroke);border-radius:var(--radius);
+  font-size:11px;cursor:pointer;transition:background 0.1s;white-space:nowrap;
 }
-.mods-loading{
-  display:flex;align-items:center;justify-content:center;
-  gap:10px;padding:48px;color:var(--text-ter);font-size:13px;
+.mk-btn-apply:hover{background:var(--ctrl-fill-sec);color:var(--text-pri)}
+.mk-ff-preview{
+  background:#111;border:1px solid var(--ctrl-stroke);border-radius:var(--radius);
+  padding:6px 8px;font-size:10px;color:var(--text-ter);
+  font-family:monospace;margin:4px 0;max-height:60px;overflow:hidden;
 }
-.mods-spinner{
-  width:18px;height:18px;border-radius:50%;
-  border:2px solid rgba(255,255,255,0.1);
-  border-top-color:var(--accent);
-  animation:spin 0.7s linear infinite;
+.mk-empty{grid-column:1/-1;text-align:center;padding:48px;color:var(--text-ter);font-size:13px}
+.mk-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:48px;color:var(--text-ter);font-size:13px}
+.mk-spinner{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.1);border-top-color:var(--accent);animation:mk-spin .7s linear infinite}
+@keyframes mk-spin{to{transform:rotate(360deg)}}
+.mk-reset-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:8px;flex-shrink:0}
+.mk-danger{
+  height:30px;padding:0 14px;border-radius:var(--radius);
+  background:rgba(239,68,68,.10);color:#ef4444;
+  border:1px solid rgba(239,68,68,.25);font-size:12px;cursor:pointer;
+  transition:background .1s;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
+.mk-danger:hover{background:rgba(239,68,68,.20)}
+
 
 /* ── About ───────────────────────────────────────────────────── */
 .about-hero{display:flex;align-items:center;gap:20px;margin-bottom:16px}
@@ -812,32 +824,44 @@ table.ff-tbl td input:focus{
           </div></div>
         </div>
 
-        <!-- ── Browse Mods ───────────────────────────────── -->
+        <!-- ── Marketplace ──────────────────────────────────── -->
         <div class="page" id="p-mods" style="display:none;height:100%;flex-direction:column">
-          <span class="page-desc" style="margin-bottom:10px">
-            Browse and install community mods for Roblox. Mod list from
-            <a href="#" onclick="return false" style="color:var(--accent)">Lution Marketplace</a>.
-          </span>
 
-          <div class="mods-toolbar">
-            <input class="mods-search" id="mod-search" placeholder="Search mods…" oninput="filterMods()">
-            <div class="mods-filter">
-              <button class="mods-chip active" data-filter="all"    onclick="setFilter('all',this)">All</button>
-              <button class="mods-chip"        data-filter="stable" onclick="setFilter('stable',this)">Stable</button>
-              <button class="mods-chip"        data-filter="unknown" onclick="setFilter('unknown',this)">Unknown</button>
-            </div>
-            <button class="mods-refresh" onclick="loadMods(true)" title="Reload from network">↺</button>
+          <!-- tabs -->
+          <div class="mk-tabs">
+            <div class="mk-tab active" data-tab="mods"   onclick="mkTab('mods',this)">Mods</div>
+            <div class="mk-tab"        data-tab="themes" onclick="mkTab('themes',this)">Themes</div>
+            <div class="mk-tab"        data-tab="fflags" onclick="mkTab('fflags',this)">Fast Flag Presets</div>
+            <div class="mk-tab"        data-tab="installed" onclick="mkTab('installed',this)">Installed</div>
           </div>
 
-          <div id="mods-container" style="flex:1;overflow-y:auto;overflow-x:hidden">
-            <div class="mods-loading" id="mods-loading">
-              <div class="mods-spinner"></div>Loading mods…
+          <!-- toolbar (hidden on installed tab) -->
+          <div class="mk-toolbar" id="mk-toolbar">
+            <input class="mk-search" id="mk-search" placeholder="Search…" oninput="mkRender()">
+            <div class="mk-filter" id="mk-filter">
+              <button class="mk-chip active" data-f="all"      onclick="mkSetFilter('all',this)">All</button>
+              <button class="mk-chip"        data-f="stable"   onclick="mkSetFilter('stable',this)">Stable</button>
+              <button class="mk-chip"        data-f="unstable" onclick="mkSetFilter('unstable',this)">Unstable</button>
+              <button class="mk-chip"        data-f="unknown"  onclick="mkSetFilter('unknown',this)">Unknown</button>
             </div>
-            <div class="mods-grid" id="mods-grid" style="display:none"></div>
+            <button class="mk-refresh" onclick="mkLoad(true)" title="Reload">↺</button>
           </div>
+
+          <!-- reset row (shown on installed tab) -->
+          <div class="mk-reset-row" id="mk-reset-row" style="display:none">
+            <button class="mk-danger" onclick="mkReset()">Reset all mods</button>
+          </div>
+
+          <!-- content -->
+          <div id="mk-content" style="flex:1;overflow-y:auto;overflow-x:hidden">
+            <div class="mk-loading" id="mk-loading"><div class="mk-spinner"></div>Loading marketplace…</div>
+            <div class="mk-grid"   id="mk-grid"    style="display:none"></div>
+          </div>
+
         </div>
 
         <!-- ── About ─────────────────────────────────────── -->
+                <!-- ── About ─────────────────────────────────────── -->
         <div class="page" id="p-about">
           <div class="about-hero">
             <img src="/assets/krabby.png" alt="Sober">
@@ -891,7 +915,7 @@ table.ff-tbl td input:focus{
 const TITLES = {
   integrations:'Integrations', behaviour:'Behaviour',
   deployment:'Deployment', fastflags:'Fast Flags',
-  globalsettings:'Global Settings', mods:'Browse Mods', about:'About'
+  globalsettings:'Global Settings', mods:'Marketplace', about:'About'
 };
 
 let config = {};
@@ -905,7 +929,7 @@ function go(id, el) {
   pg.classList.add('active');
   if (id === 'mods') {
     pg.style.display = 'flex';
-    if (!window._modsLoaded) loadMods(false);
+    if (!_mkLoaded) mkLoad(false);
   } else {
     pg.style.display = '';
   }
@@ -913,89 +937,232 @@ function go(id, el) {
   document.getElementById('bc').textContent = TITLES[id] || id;
 }
 
-// ── Browse Mods ───────────────────────────────────────────────────
-let _allMods = [];
-let _activeFilter = 'all';
-window._modsLoaded = false;
+// ── Marketplace ──────────────────────────────────────────────────────────
+let _mkData    = null;   // {mods, themes, fflags}
+let _mkTab     = 'mods';
+let _mkFilter  = 'all';
+let _mkLoaded  = false;
 
-async function loadMods(refresh) {
-  const grid = document.getElementById('mods-grid');
-  const loading = document.getElementById('mods-loading');
-  grid.style.display = 'none';
+async function mkLoad(refresh) {
+  const grid    = document.getElementById('mk-grid');
+  const loading = document.getElementById('mk-loading');
+  grid.style.display    = 'none';
   loading.style.display = 'flex';
+  loading.innerHTML     = '<div class="mk-spinner"></div>Loading marketplace…';
   try {
-    const r = await fetch('/api/mods' + (refresh ? '?refresh=1' : ''));
+    const r = await fetch('/api/marketplace/all' + (refresh ? '?refresh=1' : ''));
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    _allMods = await r.json();
-    window._modsLoaded = true;
-    renderMods();
+    _mkData   = await r.json();
+    _mkLoaded = true;
+    mkRender();
   } catch(e) {
-    loading.innerHTML = '⚠ Failed to load mods — check your connection.';
+    loading.innerHTML = '⚠ Failed to load — check your connection. (' + e.message + ')';
   }
 }
 
-function renderMods() {
-  const grid = document.getElementById('mods-grid');
-  const loading = document.getElementById('mods-loading');
-  const q = (document.getElementById('mod-search').value || '').toLowerCase();
-  const filtered = _allMods.filter(m => {
-    const matchFilter = _activeFilter === 'all' || (m.sb || 'unknown') === _activeFilter;
-    const matchQ = !q || (m.title||'').toLowerCase().includes(q) ||
-                         (m.body||'').toLowerCase().includes(q) ||
-                         (m.creator||'').toLowerCase().includes(q);
-    return matchFilter && matchQ;
+function mkTab(tab, el) {
+  _mkTab = tab;
+  document.querySelectorAll('.mk-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const toolbar  = document.getElementById('mk-toolbar');
+  const resetRow = document.getElementById('mk-reset-row');
+  toolbar.style.display  = tab === 'installed' ? 'none' : '';
+  resetRow.style.display = tab === 'installed' ? ''     : 'none';
+  if (!_mkLoaded) return mkLoad(false);
+  mkRender();
+}
+
+function mkSetFilter(f, el) {
+  _mkFilter = f;
+  document.querySelectorAll('.mk-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  mkRender();
+}
+
+function mkRender() {
+  if (!_mkData) return;
+  const grid    = document.getElementById('mk-grid');
+  const loading = document.getElementById('mk-loading');
+  loading.style.display = 'none';
+  grid.style.display    = 'grid';
+  grid.innerHTML = '';
+
+  if (_mkTab === 'installed') { mkRenderInstalled(grid); return; }
+
+  const q   = (document.getElementById('mk-search').value || '').toLowerCase();
+  let items = _mkTab === 'fflags' ? _mkData.fflags
+            : _mkTab === 'themes' ? _mkData.themes
+            : _mkData.mods;
+
+  items = items.filter(m => {
+    const sb = (m.sb || 'unknown');
+    const matchF = _mkFilter === 'all' || sb === _mkFilter;
+    const matchQ = !q ||
+      (m.title||'').toLowerCase().includes(q) ||
+      (m.body ||m.desc||'').toLowerCase().includes(q) ||
+      (m.creator||m.by||'').toLowerCase().includes(q);
+    return matchF && matchQ;
   });
 
-  grid.innerHTML = '';
-  if (!filtered.length) {
-    grid.innerHTML = '<div class="mods-empty">No mods match your search.</div>';
-  } else {
-    filtered.forEach(m => grid.appendChild(modCard(m)));
+  if (!items.length) {
+    grid.innerHTML = '<div class="mk-empty">No items match your search.</div>';
+    return;
   }
-  loading.style.display = 'none';
-  grid.style.display = 'grid';
+
+  if (_mkTab === 'fflags') {
+    items.forEach(m => grid.appendChild(mkFflagCard(m)));
+  } else {
+    items.forEach(m => grid.appendChild(mkCard(m, _mkTab === 'themes' ? 'theme' : 'mod')));
+  }
 }
 
-function modCard(m) {
+function mkRenderInstalled(grid) {
+  const mods   = (_mkData.mods   || []).filter(m => m._installed);
+  const themes = (_mkData.themes || []).filter(t => t._installed);
+  if (!mods.length && !themes.length) {
+    grid.innerHTML = '<div class="mk-empty">No installed mods or themes yet.<br>Go to Mods or Themes to install something.</div>';
+    return;
+  }
+  if (mods.length) {
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'grid-column:1/-1;font-size:14px;font-weight:600;color:var(--text-pri);margin-top:4px;margin-bottom:4px';
+    hdr.textContent = 'Mods';
+    grid.appendChild(hdr);
+    mods.forEach(m => grid.appendChild(mkCard(m, 'mod')));
+  }
+  if (themes.length) {
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'grid-column:1/-1;font-size:14px;font-weight:600;color:var(--text-pri);margin-top:8px;margin-bottom:4px';
+    hdr.textContent = 'Themes';
+    grid.appendChild(hdr);
+    themes.forEach(t => grid.appendChild(mkCard(t, 'theme')));
+  }
+}
+
+function mkCard(m, type) {
   const card = document.createElement('div');
-  card.className = 'mod-card';
-
-  const sbMap = {stable:'mod-badge-stable', unstable:'mod-badge-unstable', unknown:'mod-badge-unknown'};
-  const sbLabel = {stable:'Stable', unstable:'Unstable', unknown:'Unknown'};
+  card.className = 'mk-card';
   const sb = m.sb || 'unknown';
+  const sbClass = {stable:'mk-stable', unstable:'mk-unstable', unknown:'mk-unknown'}[sb] || 'mk-unknown';
+  const sbLabel = {stable:'Stable', unstable:'Unstable', unknown:'Unknown'}[sb] || 'Unknown';
+  const name = m.title || 'Untitled';
+  const desc = m.body  || '';
+  const who  = m.creator || '';
+  const installed = m._installed;
 
-  card.innerHTML = `
-    ${m.image
-      ? `<img class="mod-thumb" src="${m.image}" alt="" loading="lazy" onerror="this.style.display='none'">`
-      : `<div class="mod-thumb-placeholder">📦</div>`}
-    <div class="mod-body">
-      <div class="mod-title">${esc(m.title||'Untitled')}</div>
-      <div class="mod-desc">${esc(m.body||'')}</div>
-      <div class="mod-creator">by ${esc(m.creator||'Unknown')}</div>
-      <div class="mod-footer">
-        <span class="mod-badge ${sbMap[sb]||sbMap.unknown}">${sbLabel[sb]||'Unknown'}</span>
-        <button class="mod-btn" onclick="openMod(${JSON.stringify(m.title)})">View</button>
+  card.innerHTML = \`
+    \${m.image
+      ? \`<img class="mk-thumb" src="\${esc(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">\`
+      : \`<div class="mk-thumb-ph">📦</div>\`}
+    <div class="mk-body">
+      <div class="mk-title">\${esc(name)}</div>
+      \${desc ? \`<div class="mk-desc">\${esc(desc)}</div>\` : ''}
+      \${who  ? \`<div class="mk-creator">by \${esc(who)}</div>\` : ''}
+      <div class="mk-footer">
+        <span class="mk-badge \${sbClass}">\${sbLabel}</span>
+        <div style="display:flex;gap:4px">
+          \${installed
+            ? \`<button class="mk-btn-apply" onclick='mkApply(\${JSON.stringify(name)},"\${type}")'>Apply</button>
+               <button class="mk-btn installed" onclick='mkRemove(\${JSON.stringify(name)},"\${type}",this.closest(".mk-card"))'>Remove</button>\`
+            : \`<button class="mk-btn" onclick='mkInstall(\${JSON.stringify(name)},"\${type}",this)'>Install</button>\`
+          }
+        </div>
       </div>
-    </div>`;
+    </div>\`;
   return card;
 }
 
-function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-
-function openMod(title) {
-  const m = _allMods.find(x => x.title === title);
-  if (!m) return;
-  showToast(`Opening "${m.title}" — search it on Gamebanana or GitHub.`);
+function mkFflagCard(m) {
+  const card = document.createElement('div');
+  card.className = 'mk-card';
+  const preview = m.preview ? Object.entries(m.preview).slice(0,3).map(([k,v])=>\`\${k}: \${v}\`).join('\n') : '';
+  card.innerHTML = \`
+    \${m.image
+      ? \`<img class="mk-thumb" src="\${esc(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">\`
+      : \`<div class="mk-thumb-ph">⚑</div>\`}
+    <div class="mk-body">
+      <div class="mk-title">\${esc(m.title||'Untitled')}</div>
+      \${m.desc ? \`<div class="mk-desc">\${esc(m.desc)}</div>\` : ''}
+      \${preview ? \`<div class="mk-ff-preview">\${esc(preview)}…</div>\` : ''}
+      \${m.by ? \`<div class="mk-creator">by \${esc(m.by)}</div>\` : ''}
+      <div class="mk-footer">
+        <span></span>
+        <button class="mk-btn" onclick='mkApplyFflag(\${JSON.stringify(m.install)},this)'>Apply</button>
+      </div>
+    </div>\`;
+  return card;
 }
 
-function filterMods() { renderMods(); }
-
-function setFilter(f, el) {
-  _activeFilter = f;
-  document.querySelectorAll('.mods-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  renderMods();
+async function mkInstall(name, type, btn) {
+  btn.disabled = true; btn.textContent = 'Installing…';
+  try {
+    const r = await fetch('/api/marketplace/install', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name, type})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.status);
+    // update local state
+    const list = type === 'mod' ? _mkData.mods : _mkData.themes;
+    const item = list.find(m => m.title === name);
+    if (item) item._installed = true;
+    showToast('✓ ' + name + ' installed');
+    mkRender();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Install';
+    showToast('✗ ' + e.message);
+  }
 }
+
+async function mkApply(name, type) {
+  showToast('Applying ' + name + '…');
+  const r = await fetch('/api/marketplace/apply', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, type})
+  });
+  const d = await r.json();
+  if (!r.ok) showToast('✗ ' + (d.error||r.status));
+  else showToast('✓ Applied — restart Sober to see changes');
+}
+
+async function mkRemove(name, type, card) {
+  card.style.opacity = '0.4';
+  const r = await fetch('/api/marketplace/remove', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, type})
+  });
+  const d = await r.json();
+  if (!r.ok) { card.style.opacity='1'; showToast('✗ ' + (d.error||r.status)); return; }
+  const list = type === 'mod' ? _mkData.mods : _mkData.themes;
+  const item = list.find(m => m.title === name);
+  if (item) item._installed = false;
+  showToast('✓ Removed ' + name);
+  mkRender();
+}
+
+async function mkApplyFflag(install, btn) {
+  if (!install) { showToast('No install path for this preset'); return; }
+  btn.disabled = true; btn.textContent = 'Applying…';
+  const r = await fetch('/api/marketplace/fflag-apply', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({install})
+  });
+  const d = await r.json();
+  btn.disabled = false; btn.textContent = 'Apply';
+  if (!r.ok) showToast('✗ ' + (d.error||r.status));
+  else showToast('✓ Applied ' + (d.applied||0) + ' flags — restart Sober');
+}
+
+async function mkReset() {
+  if (!confirm('Reset all mods? This will restore Sober\'s original assets.')) return;
+  showToast('Resetting…');
+  const r = await fetch('/api/marketplace/reset', {method:'POST'});
+  const d = await r.json();
+  if (!r.ok) showToast('✗ ' + (d.error||r.status));
+  else showToast('✓ Mods reset — restart Sober');
+}
+
+
 
 // ── init ─────────────────────────────────────────────────────────
 async function init() {

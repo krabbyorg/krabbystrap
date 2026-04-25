@@ -1,19 +1,26 @@
-from flask import Flask, jsonify, request, send_file, send_from_directory
-import json, subprocess, re, urllib.request, urllib.error, zipfile, shutil, os, threading
+from flask import Flask, jsonify, request, send_file, send_from_directory, Response
+import json, subprocess, re, urllib.request, urllib.error, zipfile, shutil, os, threading, tempfile
+import hashlib, mimetypes
 from pathlib import Path
+from urllib.parse import quote as urlquote
 
-app = Flask(__name__)
+ROOT = Path(__file__).parent.parent   # project root
+
+app = Flask(__name__, root_path=str(ROOT))
 
 SOBER_CONFIG    = Path.home() / ".var/app/org.vinegarhq.Sober/config/sober/config.json"
 SOBER_OVERLAY   = Path.home() / ".var/app/org.vinegarhq.Sober/data/sober/asset_overlay"
 SOBER_ASSETS    = Path.home() / ".var/app/org.vinegarhq.Sober/data/sober/assets"
-ASSETS_DIR      = Path(__file__).parent / "assets"
+ASSETS_DIR      = ROOT / "assets"
 KRABBY_DIR      = Path.home() / "Documents/Krabbystrap"
 MARKETPLACE_DIR = KRABBY_DIR / "Marketplace"
 INSTALLED_DB    = KRABBY_DIR / "installed.json"
+IMG_CACHE_DIR   = KRABBY_DIR / "img_cache"
 SOBER_VER       = "1.6.7"
+LAUNCH_FLAG     = Path(tempfile.gettempdir()) / "krabbystrap_launch.flag"
 
-GH_RAW = "https://raw.githubusercontent.com/Wookhq/Lution-Marketplace/main/"
+GH_RAW   = "https://raw.githubusercontent.com/Wookhq/Lution-Marketplace/main/"
+GH_MEDIA = "https://media.githubusercontent.com/media/Wookhq/Lution-Marketplace/main/"
 MARKETPLACE_URLS = {
     "mods_content":   GH_RAW + "Assets/Mods/content.json",
     "mods_info":      GH_RAW + "Assets/Mods/info.json",
@@ -28,6 +35,10 @@ def _fetch(url: str, timeout=10) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": "Krabbystrap/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
+
+def _gh_url(path: str) -> str:
+    parts = path.split("/")
+    return GH_RAW + "/".join(urlquote(p, safe="") for p in parts)
 
 def _fetch_json(url: str) -> list | dict:
     return json.loads(_fetch(url))
@@ -61,7 +72,8 @@ def _load_installed() -> dict:
 def _save_installed(db: dict):
     INSTALLED_DB.write_text(json.dumps(db, indent=2))
 
-# ── in-memory cache (reset on /refresh) ───────────────────────────────────
+# ── in-memory cache ────────────────────────────────────────────────────────
+
 _cache: dict = {}
 _cache_lock = threading.Lock()
 
@@ -92,9 +104,16 @@ def post_config():
 
 @app.route("/api/launch", methods=["POST"])
 def do_launch():
-    subprocess.Popen(["flatpak", "run", "org.vinegarhq.Sober"],
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return jsonify({"ok": True})
+    try:
+        r = subprocess.run(["flatpak", "ps"], capture_output=True, text=True)
+        already = "org.vinegarhq.Sober" in r.stdout
+    except Exception:
+        already = False
+    if not already:
+        subprocess.Popen(["flatpak", "run", "org.vinegarhq.Sober"],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    LAUNCH_FLAG.touch()
+    return jsonify({"ok": True, "already_running": already})
 
 @app.route("/api/info", methods=["GET"])
 def info():
@@ -106,28 +125,25 @@ def info():
 def marketplace_all():
     refresh = request.args.get("refresh") == "1"
     try:
-        mods    = _get_cached("mods_content",   MARKETPLACE_URLS["mods_content"],   refresh)
-        themes  = _get_cached("themes_content",  MARKETPLACE_URLS["themes_content"],  refresh)
-        fflags  = _get_cached("fflags_content",  MARKETPLACE_URLS["fflags_content"],  refresh)
-        m_info  = _get_cached("mods_info",       MARKETPLACE_URLS["mods_info"],       refresh)
-        t_info  = _get_cached("themes_info",     MARKETPLACE_URLS["themes_info"],     refresh)
+        mods   = _get_cached("mods_content",  MARKETPLACE_URLS["mods_content"],  refresh)
+        themes = _get_cached("themes_content", MARKETPLACE_URLS["themes_content"], refresh)
+        fflags = _get_cached("fflags_content", MARKETPLACE_URLS["fflags_content"], refresh)
+        m_info = _get_cached("mods_info",      MARKETPLACE_URLS["mods_info"],      refresh)
+        t_info = _get_cached("themes_info",    MARKETPLACE_URLS["themes_info"],    refresh)
     except Exception as e:
         return jsonify({"error": str(e)}), 502
 
-    installed = _load_installed()
+    installed   = _load_installed()
     inst_mods   = set(installed.get("mods", []))
     inst_themes = set(installed.get("themes", []))
-
-    # attach download path + installed flag to each mod/theme card
     m_map = {i["name"]: i["path"] for i in m_info}
     t_map = {i["name"]: i["path"] for i in t_info}
 
     for m in mods:
-        m["_dl"] = m_map.get(m.get("title", ""))
+        m["_dl"]        = m_map.get(m.get("title", ""))
         m["_installed"] = m.get("title", "") in inst_mods
-
     for t in themes:
-        t["_dl"] = t_map.get(t.get("title", ""))
+        t["_dl"]        = t_map.get(t.get("title", ""))
         t["_installed"] = t.get("title", "") in inst_themes
 
     return jsonify({"mods": mods, "themes": themes, "fflags": fflags})
@@ -135,9 +151,9 @@ def marketplace_all():
 
 @app.route("/api/marketplace/install", methods=["POST"])
 def marketplace_install():
-    data  = request.json or {}
-    name  = data.get("name", "").strip()
-    kind  = data.get("type", "")   # "mod" or "theme"
+    data = request.json or {}
+    name = data.get("name", "").strip()
+    kind = data.get("type", "")
     if not name or kind not in ("mod", "theme"):
         return jsonify({"error": "bad params"}), 400
 
@@ -150,19 +166,28 @@ def marketplace_install():
         if not entry:
             return jsonify({"error": f"'{name}' not found in info.json"}), 404
 
-        dl_url = GH_RAW + entry["path"]
+        dl_url   = _gh_url(entry["path"])
         dest_dir = MARKETPLACE_DIR / (kind + "s") / name
         dest_dir.mkdir(parents=True, exist_ok=True)
 
-        zip_bytes = _fetch(dl_url, timeout=30)
-        zip_path  = dest_dir / (name + ".zip")
-        zip_path.write_bytes(zip_bytes)
+        zip_bytes = _fetch(dl_url, timeout=60)
 
+        if zip_bytes.startswith(b"version https://git-lfs.github.com"):
+            parts     = entry["path"].split("/")
+            media_url = GH_MEDIA + "/".join(urlquote(p, safe="") for p in parts)
+            zip_bytes = _fetch(media_url, timeout=60)
+
+        if zip_bytes[:4] != b"PK\x03\x04":
+            preview = zip_bytes[:120].decode("utf-8", errors="replace")
+            return jsonify({"error": f"Download didn't return a ZIP file. Got: {preview}"}), 502
+
+        zip_path = dest_dir / (name + ".zip")
+        zip_path.write_bytes(zip_bytes)
         with zipfile.ZipFile(zip_path, "r") as zf:
             zf.extractall(dest_dir)
         zip_path.unlink()
 
-        db = _load_installed()
+        db  = _load_installed()
         lst = db.setdefault(kind + "s", [])
         if name not in lst:
             lst.append(name)
@@ -249,8 +274,8 @@ def fflag_apply():
     if not inst_url:
         return jsonify({"error": "missing install path"}), 400
     try:
-        raw  = _fetch(GH_RAW + inst_url)
-        blob = json.loads(raw)
+        raw   = _fetch(GH_RAW + inst_url)
+        blob  = json.loads(raw)
         flags = blob.get("fastflag") or blob.get("fflags") or blob
         if not isinstance(flags, dict):
             return jsonify({"error": "unexpected fflag format"}), 502
@@ -265,6 +290,27 @@ def fflag_apply():
 @app.route("/api/marketplace/installed", methods=["GET"])
 def marketplace_installed():
     return jsonify(_load_installed())
+
+
+@app.route("/api/img-proxy")
+def img_proxy():
+    url = request.args.get("url", "")
+    if not url:
+        return "", 400
+    h   = hashlib.md5(url.encode()).hexdigest()
+    ext = url.rsplit(".", 1)[-1].lower().split("?")[0]
+    if ext not in ("jpg", "jpeg", "png", "gif", "webp"):
+        ext = "jpg"
+    cache_path = IMG_CACHE_DIR / f"{h}.{ext}"
+    IMG_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    if not cache_path.exists():
+        try:
+            data = _fetch(url, timeout=15)
+            cache_path.write_bytes(data)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 502
+    mime = mimetypes.guess_type(str(cache_path))[0] or "image/jpeg"
+    return send_file(cache_path, mimetype=mime)
 
 
 if __name__ == "__main__":

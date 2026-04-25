@@ -9,64 +9,65 @@ A [Bloxstrap](https://github.com/bloxstraplabs/bloxstrap) / [Fishstrap](https://
 ## Features
 
 - Home launcher — choose **Launch** or **Settings** on startup
-- Fluent-design settings UI (dark theme, Fishstrap-style)
+- Launch progress splash with real Sober process detection
+- Fluent-design settings UI (dark theme, yellow accent)
 - Edit **Fast Flags** directly from the UI
 - Toggle Discord Rich Presence, GameMode, HiDPI, OpenGL, and more
+- **Browse Mods** — install, apply, and remove mods & themes from the Lution Marketplace
+- Fast Flag presets from the marketplace, applied with one click
+- Thumbnail image cache (no repeated downloads)
 - Reads & writes Sober's `config.json` natively
 
 ## Requirements
 
-- **Sober** installed as a Flatpak (`org.vinegarhq.Sober`)
+- [Sober](https://sober.vinegarhq.org/) installed as a Flatpak (`org.vinegarhq.Sober`)
 - Python 3.11+
 - `python3-venv`
+- `flatpak`
 
 ## Install
 
 ```bash
-git clone https://github.com/you/krabbystrap
+git clone https://github.com/krabbyorg/krabbystrap
 cd krabbystrap
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-chmod +x krabbystrap.sh
+./install.sh
 ```
 
-### Optional: add to app launcher
-
-```bash
-cp krabbystrap.desktop.example ~/.local/share/applications/krabbystrap.desktop
-# edit the Exec path inside the file to match your clone location
-update-desktop-database ~/.local/share/applications/
-```
+`install.sh` will:
+- Check Python and Flatpak are present
+- Create a `.venv` and install dependencies
+- Add a `krabbystrap.desktop` entry to your app launcher
 
 ## Usage
 
 ```bash
-./krabbystrap.sh            # home screen (launch or settings)
+./krabbystrap.sh            # home screen (launch or open settings)
 ./krabbystrap.sh --settings # open settings directly
 ```
 
-## Config location
+## Data locations
 
-Sober's config is stored at:
-
-```
-~/.var/app/org.vinegarhq.Sober/config/sober/config.json
-```
-
-Krabbystrap reads and writes this file directly.
+| Path | Purpose |
+|------|---------|
+| `~/.var/app/org.vinegarhq.Sober/config/sober/config.json` | Sober config (read/write) |
+| `~/.var/app/org.vinegarhq.Sober/data/sober/asset_overlay/` | Active mod/theme overlay |
+| `~/Documents/Krabbystrap/Marketplace/` | Downloaded mods & themes |
+| `~/Documents/Krabbystrap/installed.json` | Installed items index |
+| `~/Documents/Krabbystrap/img_cache/` | Cached marketplace thumbnails |
 
 ## Project structure
 
 ```
-krabbystrap.sh      entry point
-launch.py           Qt home dialog + settings window shell
-server.py           Flask backend (config API)
+krabbystrap.sh        entry point
+install.sh            installer (venv + desktop entry)
+src/
+  launch.py           Qt home dialog, launch splash, settings window
+  server.py           Flask backend (API + marketplace)
 templates/
-  index.html        settings UI (HTML/CSS/JS)
+  index.html          settings UI (HTML/CSS/JS)
 assets/
-  krabby.svg        app icon (source)
-  krabby.png        app icon (rasterised)
+  krabby.svg          app icon (source)
+  krabby.png          app icon (rasterised)
 requirements.txt
 ```
 

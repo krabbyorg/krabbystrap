@@ -923,15 +923,13 @@ let selRow = null;
 
 // ── navigation ───────────────────────────────────────────────────
 function go(id, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = ''; });
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const pg = document.getElementById('p-'+id);
   pg.classList.add('active');
   if (id === 'mods') {
     pg.style.display = 'flex';
     if (!_mkLoaded) mkLoad(false);
-  } else {
-    pg.style.display = '';
   }
   el.classList.add('active');
   document.getElementById('bc').textContent = TITLES[id] || id;
@@ -1052,7 +1050,7 @@ function mkCard(m, type) {
 
   card.innerHTML = `
     ${m.image
-      ? `<img class="mk-thumb" src="${esc(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      ? `<img class="mk-thumb" src="/api/img-proxy?url=${encodeURIComponent(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">`
       : `<div class="mk-thumb-ph">📦</div>`}
     <div class="mk-body">
       <div class="mk-title">${esc(name)}</div>
@@ -1078,7 +1076,7 @@ function mkFflagCard(m) {
   const preview = m.preview ? Object.entries(m.preview).slice(0,3).map(([k,v])=>`${k}: ${v}`).join('\n') : '';
   card.innerHTML = `
     ${m.image
-      ? `<img class="mk-thumb" src="${esc(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      ? `<img class="mk-thumb" src="/api/img-proxy?url=${encodeURIComponent(m.image)}" alt="" loading="lazy" onerror="this.style.display='none'">`
       : `<div class="mk-thumb-ph">⚑</div>`}
     <div class="mk-body">
       <div class="mk-title">${esc(m.title||'Untitled')}</div>
@@ -1312,8 +1310,10 @@ async function saveConfig() {
 }
 async function saveAndLaunch() {
   await saveConfig();
-  await fetch('/api/launch',{method:'POST'});
+  const r = await fetch('/api/launch',{method:'POST'});
+  if (!r.ok) { showToast('✗  Launch failed'); return; }
   showToast('▶  Launching Roblox…');
+  setTimeout(() => window.close(), 1200);
 }
 
 // ── ui helpers ───────────────────────────────────────────────────

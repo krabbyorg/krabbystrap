@@ -73,9 +73,10 @@ EOF
           mkdir -p archpkg/krabbystrap-$VERSION
           cp -r src templates assets requirements.txt archpkg/krabbystrap-$VERSION/
 
+          VERSION_VAR="$VERSION"
           cat > archpkg/PKGBUILD << 'EOF'
 pkgname=krabbystrap
-pkgver=$VERSION
+pkgver=PLACEHOLDER_VERSION
 pkgrel=1
 pkgdesc="Roblox launcher for Linux via Sober"
 arch=('any')
@@ -112,6 +113,7 @@ Exec=krabbystrap --settings
 DESK
 }
 EOF
+          sed -i "s/PLACEHOLDER_VERSION/$VERSION_VAR/" archpkg/PKGBUILD
           cd archpkg
           tar czf ../krabbystrap-$VERSION.tar.gz PKGBUILD krabbystrap-$VERSION/
 

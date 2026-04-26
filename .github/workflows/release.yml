@@ -6,19 +6,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-deb:
+  build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install deps
+      - name: Setup environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y fpm python3-all
-
-      - name: Build .deb
-        run: |
+          sudo apt-get install -y fpm python3-all tar
           VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Build .deb package
+        run: |
           mkdir -p pkg/usr/lib/krabbystrap
           mkdir -p pkg/usr/bin
           mkdir -p pkg/usr/share/applications
@@ -67,41 +68,107 @@ EOF
             --depends "flatpak" \
             -C pkg .
 
-      - name: Upload .deb
+      - name: Build Arch package
+        run: |
+          mkdir -p archpkg/krabbystrap-$VERSION
+          cp -r src templates assets requirements.txt archpkg/krabbystrap-$VERSION/
+
+          cat > archpkg/PKGBUILD << 'EOF'
+pkgname=krabbystrap
+pkgver=$VERSION
+pkgrel=1
+pkgdesc="Roblox launcher for Linux via Sober"
+arch=('any')
+url="https://github.com/krabbyorg/krabbystrap"
+license=('GPL-3.0-only')
+depends=('python>=3.11' 'python-pyside6' 'python-flask' 'python-requests' 'flatpak')
+source=(".")
+md5sums=("SKIP")
+
+package() {
+    install -dm755 "$pkgdir/usr/lib/$pkgname"
+    cp -r src templates assets requirements.txt "$pkgdir/usr/lib/$pkgname/"
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/$pkgname" << 'EXEC'
+#!/bin/bash
+exec python3 /usr/lib/krabbystrap/src/launch.py "$@"
+EXEC
+
+    install -Dm644 assets/krabby.png "$pkgdir/usr/share/pixmaps/krabbystrap.png"
+    install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/krabbystrap.desktop" << 'DESK'
+[Desktop Entry]
+Name=Krabbystrap
+Comment=Roblox launcher for Linux via Sober
+Exec=krabbystrap
+Icon=krabbystrap
+Type=Application
+Categories=Game;
+Terminal=false
+Actions=Settings;
+
+[Desktop Action Settings]
+Name=Open Settings
+Exec=krabbystrap --settings
+DESK
+}
+EOF
+          cd archpkg
+          tar czf ../krabbystrap-$VERSION.tar.gz PKGBUILD krabbystrap-$VERSION/
+
+      - name: Sign packages with GPG
+        env:
+          GPG_KEY: ${{ secrets.KRABBYSTRAP_GPG_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "$GPG_KEY" | gpg --import --batch --no-tty 2>/dev/null || true
+
+          # Sign .deb
+          gpg --detach-sign --armor --batch --no-tty \
+            krabbystrap_$VERSION_all.deb 2>/dev/null || echo "Warning: GPG signing failed, continuing unsigned"
+
+          # Sign .tar.gz
+          gpg --detach-sign --armor --batch --no-tty \
+            krabbystrap-$VERSION.tar.gz 2>/dev/null || echo "Warning: GPG signing failed, continuing unsigned"
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: deb-package
-          path: krabbystrap_*.deb
+          name: packages
+          path: |
+            krabbystrap_*.deb*
+            krabbystrap-*.tar.gz*
 
   release:
-    needs: build-deb
+    needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: packages
+          path: ./packages
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/**/*
+          files: packages/**
           body: |
-            ## Install
+            ## Installation
 
-            **AUR (Arch Linux):**
+            ### Debian / Ubuntu
             ```bash
-            yay -S krabbystrap
+            curl -fsSL https://raw.githubusercontent.com/krabbyorg/krabbystrap/main/packaging/setup-repo.sh | bash
+            sudo apt install krabbystrap
             ```
 
-            **Debian/Ubuntu:**
+            ### Arch Linux
             ```bash
-            sudo apt install ./krabbystrap_*.deb
+            curl -fsSL https://raw.githubusercontent.com/krabbyorg/krabbystrap/main/packaging/setup-repo.sh | bash
+            sudo pacman -S krabbystrap
             ```
 
-            **Manual:**
-            ```bash
-            git clone https://github.com/krabbyorg/krabbystrap
-            cd krabbystrap
-            ./install.sh
-            ```
+            ### Manual Install
+            Download the appropriate package above and install:
+            - **Debian/Ubuntu**: `sudo apt install ./krabbystrap_*.deb`
+            - **Arch Linux**: `sudo pacman -U ./krabbystrap-*.tar.gz`

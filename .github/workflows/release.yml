@@ -59,7 +59,7 @@ jobs:
 
       - name: Setup build environment
         run: |
-          pacman -Syu --noconfirm base-devel python git
+          pacman -Syu --noconfirm base-devel python git python-pyside6 python-flask python-requests flatpak
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           useradd -m builder
@@ -75,7 +75,7 @@ jobs:
             "$VERSION" "$WS" "$WS" "$WS" "$WS" "$WS" "$WS" > /tmp/build/PKGBUILD
 
           chown -R builder:builder /tmp/build
-          su builder -c "cd /tmp/build && makepkg -s --noconfirm"
+          su builder -c "cd /tmp/build && makepkg --nodeps --noconfirm"
 
           cp /tmp/build/krabbystrap-*.pkg.tar.zst "$WS"/
           cd "$WS"

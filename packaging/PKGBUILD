@@ -1,0 +1,50 @@
+# Maintainer: krabbyorg <https://github.com/krabbyorg>
+pkgname=krabbystrap
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Roblox launcher for Linux via Sober"
+arch=('any')
+url="https://github.com/krabbyorg/krabbystrap"
+license=('GPL-3.0-only')
+depends=(
+    'python>=3.11'
+    'python-pyside6'
+    'python-flask'
+    'python-requests'
+    'flatpak'
+)
+source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+    cd "$srcdir/$pkgname-$pkgver"
+
+    install -dm755 "$pkgdir/usr/lib/$pkgname"
+    cp -r src templates assets requirements.txt "$pkgdir/usr/lib/$pkgname/"
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/$pkgname" <<'EOF'
+#!/bin/bash
+exec python3 /usr/lib/krabbystrap/src/launch.py "$@"
+EOF
+
+    install -Dm644 assets/krabby.png \
+        "$pkgdir/usr/share/pixmaps/krabbystrap.png"
+
+    install -Dm644 /dev/stdin \
+        "$pkgdir/usr/share/applications/krabbystrap.desktop" <<'EOF'
+[Desktop Entry]
+Name=Krabbystrap
+Comment=Roblox launcher for Linux via Sober
+Exec=krabbystrap
+Icon=krabbystrap
+Type=Application
+Categories=Game;
+Terminal=false
+StartupWMClass=Krabbystrap
+Actions=Settings;
+
+[Desktop Action Settings]
+Name=Open Settings
+Exec=krabbystrap --settings
+EOF
+}

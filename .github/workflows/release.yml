@@ -1,0 +1,107 @@
+name: Build & Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fpm python3-all
+
+      - name: Build .deb
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          mkdir -p pkg/usr/lib/krabbystrap
+          mkdir -p pkg/usr/bin
+          mkdir -p pkg/usr/share/applications
+          mkdir -p pkg/usr/share/pixmaps
+
+          cp -r src templates assets requirements.txt pkg/usr/lib/krabbystrap/
+
+          cat > pkg/usr/bin/krabbystrap << 'EOF'
+#!/bin/bash
+VENV_DIR="$HOME/.local/share/krabbystrap/venv"
+if [ ! -d "$VENV_DIR" ]; then
+    python3 -m venv "$VENV_DIR" 2>/dev/null || exit 1
+    "$VENV_DIR/bin/pip" install -q -r /usr/lib/krabbystrap/requirements.txt 2>/dev/null || exit 1
+fi
+exec "$VENV_DIR/bin/python3" /usr/lib/krabbystrap/src/launch.py "$@"
+EOF
+          chmod +x pkg/usr/bin/krabbystrap
+
+          cp assets/krabby.png pkg/usr/share/pixmaps/krabbystrap.png
+
+          cat > pkg/usr/share/applications/krabbystrap.desktop << 'EOF'
+[Desktop Entry]
+Name=Krabbystrap
+Comment=Roblox launcher for Linux via Sober
+Exec=krabbystrap
+Icon=krabbystrap
+Type=Application
+Categories=Game;
+Terminal=false
+StartupWMClass=Krabbystrap
+Actions=Settings;
+
+[Desktop Action Settings]
+Name=Open Settings
+Exec=krabbystrap --settings
+EOF
+
+          fpm -s dir -t deb \
+            -n krabbystrap \
+            -v "$VERSION" \
+            --description "Roblox launcher for Linux via Sober" \
+            --url "https://github.com/krabbyorg/krabbystrap" \
+            --license "GPL-3.0" \
+            --depends "python3 (>= 3.11)" \
+            --depends "python3-venv" \
+            --depends "flatpak" \
+            -C pkg .
+
+      - name: Upload .deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-package
+          path: krabbystrap_*.deb
+
+  release:
+    needs: build-deb
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/**/*
+          body: |
+            ## Install
+
+            **AUR (Arch Linux):**
+            ```bash
+            yay -S krabbystrap
+            ```
+
+            **Debian/Ubuntu:**
+            ```bash
+            sudo apt install ./krabbystrap_*.deb
+            ```
+
+            **Manual:**
+            ```bash
+            git clone https://github.com/krabbyorg/krabbystrap
+            cd krabbystrap
+            ./install.sh
+            ```

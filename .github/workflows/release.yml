@@ -14,7 +14,8 @@ jobs:
       - name: Setup environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y fpm python3-all tar
+          sudo apt-get install -y ruby ruby-dev build-essential python3-all tar
+          sudo gem install fpm
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
@@ -26,36 +27,13 @@ jobs:
           mkdir -p pkg/usr/share/pixmaps
 
           cp -r src templates assets requirements.txt pkg/usr/lib/krabbystrap/
-
-          cat > pkg/usr/bin/krabbystrap << 'EOF'
-#!/bin/bash
-VENV_DIR="$HOME/.local/share/krabbystrap/venv"
-if [ ! -d "$VENV_DIR" ]; then
-    python3 -m venv "$VENV_DIR" 2>/dev/null || exit 1
-    "$VENV_DIR/bin/pip" install -q -r /usr/lib/krabbystrap/requirements.txt 2>/dev/null || exit 1
-fi
-exec "$VENV_DIR/bin/python3" /usr/lib/krabbystrap/src/launch.py "$@"
-EOF
+          cp packaging/krabbystrap-launcher.sh pkg/usr/bin/krabbystrap
           chmod +x pkg/usr/bin/krabbystrap
 
           cp assets/krabby.png pkg/usr/share/pixmaps/krabbystrap.png
 
-          cat > pkg/usr/share/applications/krabbystrap.desktop << 'EOF'
-[Desktop Entry]
-Name=Krabbystrap
-Comment=Roblox launcher for Linux via Sober
-Exec=krabbystrap
-Icon=krabbystrap
-Type=Application
-Categories=Game;
-Terminal=false
-StartupWMClass=Krabbystrap
-Actions=Settings;
-
-[Desktop Action Settings]
-Name=Open Settings
-Exec=krabbystrap --settings
-EOF
+          printf '[Desktop Entry]\nName=Krabbystrap\nComment=Roblox launcher for Linux via Sober\nExec=krabbystrap\nIcon=krabbystrap\nType=Application\nCategories=Game;\nTerminal=false\nStartupWMClass=Krabbystrap\nActions=Settings;\n\n[Desktop Action Settings]\nName=Open Settings\nExec=krabbystrap --settings\n' \
+            > pkg/usr/share/applications/krabbystrap.desktop
 
           fpm -s dir -t deb \
             -n krabbystrap \
@@ -72,48 +50,11 @@ EOF
         run: |
           mkdir -p archpkg/krabbystrap-$VERSION
           cp -r src templates assets requirements.txt archpkg/krabbystrap-$VERSION/
+          cp packaging/krabbystrap-launcher.sh archpkg/krabbystrap-$VERSION/krabbystrap
 
-          VERSION_VAR="$VERSION"
-          cat > archpkg/PKGBUILD << 'EOF'
-pkgname=krabbystrap
-pkgver=PLACEHOLDER_VERSION
-pkgrel=1
-pkgdesc="Roblox launcher for Linux via Sober"
-arch=('any')
-url="https://github.com/krabbyorg/krabbystrap"
-license=('GPL-3.0-only')
-depends=('python>=3.11' 'python-pyside6' 'python-flask' 'python-requests' 'flatpak')
-source=(".")
-md5sums=("SKIP")
+          printf 'pkgname=krabbystrap\npkgver=%s\npkgrel=1\npkgdesc="Roblox launcher for Linux via Sober"\narch=("any")\nurl="https://github.com/krabbyorg/krabbystrap"\nlicense=("GPL-3.0-only")\ndepends=("python>=3.11" "python-pyside6" "python-flask" "python-requests" "flatpak")\nsource=(".")\nmd5sums=("SKIP")\n\npackage() {\n    install -dm755 "$pkgdir/usr/lib/$pkgname"\n    cp -r src templates assets requirements.txt "$pkgdir/usr/lib/$pkgname/"\n    install -Dm755 krabbystrap "$pkgdir/usr/bin/$pkgname"\n    install -Dm644 assets/krabby.png "$pkgdir/usr/share/pixmaps/krabbystrap.png"\n    printf "[Desktop Entry]\\nName=Krabbystrap\\nExec=krabbystrap\\nIcon=krabbystrap\\nType=Application\\nCategories=Game;\\nTerminal=false\\n" > "$pkgdir/usr/share/applications/krabbystrap.desktop"\n}\n' \
+            "$VERSION" > archpkg/PKGBUILD
 
-package() {
-    install -dm755 "$pkgdir/usr/lib/$pkgname"
-    cp -r src templates assets requirements.txt "$pkgdir/usr/lib/$pkgname/"
-
-    install -Dm755 /dev/stdin "$pkgdir/usr/bin/$pkgname" << 'EXEC'
-#!/bin/bash
-exec python3 /usr/lib/krabbystrap/src/launch.py "$@"
-EXEC
-
-    install -Dm644 assets/krabby.png "$pkgdir/usr/share/pixmaps/krabbystrap.png"
-    install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/krabbystrap.desktop" << 'DESK'
-[Desktop Entry]
-Name=Krabbystrap
-Comment=Roblox launcher for Linux via Sober
-Exec=krabbystrap
-Icon=krabbystrap
-Type=Application
-Categories=Game;
-Terminal=false
-Actions=Settings;
-
-[Desktop Action Settings]
-Name=Open Settings
-Exec=krabbystrap --settings
-DESK
-}
-EOF
-          sed -i "s/PLACEHOLDER_VERSION/$VERSION_VAR/" archpkg/PKGBUILD
           cd archpkg
           tar czf ../krabbystrap-$VERSION.tar.gz PKGBUILD krabbystrap-$VERSION/
 
@@ -124,11 +65,9 @@ EOF
         run: |
           echo "$GPG_KEY" | gpg --import --batch --no-tty 2>/dev/null || true
 
-          # Sign .deb
           gpg --detach-sign --armor --batch --no-tty \
-            krabbystrap_$VERSION_all.deb 2>/dev/null || echo "Warning: GPG signing failed, continuing unsigned"
+            krabbystrap_${VERSION}_all.deb 2>/dev/null || echo "Warning: GPG signing failed, continuing unsigned"
 
-          # Sign .tar.gz
           gpg --detach-sign --armor --batch --no-tty \
             krabbystrap-$VERSION.tar.gz 2>/dev/null || echo "Warning: GPG signing failed, continuing unsigned"
 

@@ -19,11 +19,15 @@ if [ "$(uname)" = "Linux" ]; then
         sudo pacman-key --lsign-key krabbystrap
 
         echo "→ Adding repository to pacman.conf..."
+        if grep -q "\[krabbystrap\]" /etc/pacman.conf; then
+            echo "→ Removing existing krabbystrap repo entry..."
+            sudo sed -i '/^\[krabbystrap\]/,/^$/d' /etc/pacman.conf
+        fi
         echo "" | sudo tee -a /etc/pacman.conf > /dev/null
         cat | sudo tee -a /etc/pacman.conf > /dev/null <<EOF
 [krabbystrap]
-Server = $REPO_URL/releases/download/repo/arch
-SigLevel = Required
+Server = $REPO_URL/releases/download/repo
+SigLevel = Optional TrustAll
 EOF
 
         echo ""

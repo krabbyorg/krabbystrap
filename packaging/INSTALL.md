@@ -1,39 +1,38 @@
-# Packaging
+# Installation
 
-## AUR (Arch Linux)
+## Official Repository (Recommended)
 
-Submit `PKGBUILD` to https://aur.archlinux.org/account/
+### Setup (one-time)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/krabbyorg/krabbystrap/main/packaging/setup-repo.sh | bash
+```
+
+### Install
+
+**Arch Linux:**
+```bash
+sudo pacman -S krabbystrap
+```
+
+**Debian/Ubuntu:**
+```bash
+sudo apt install krabbystrap
+```
+
+---
+
+## Alternative Methods
+
+### AUR (Arch Linux)
 
 ```bash
 yay -S krabbystrap
 ```
 
-## Debian / Ubuntu
+Submit `PKGBUILD` to https://aur.archlinux.org/ for AUR inclusion.
 
-Downloads built .deb from GitHub releases:
-
-```bash
-sudo apt install ./krabbystrap_*.deb
-```
-
-## Build locally
-
-### Debian .deb
-
-```bash
-fpm -s dir -t deb \
-  -n krabbystrap \
-  -v 1.0.0 \
-  --depends "python3 (>= 3.11)" \
-  --depends "python3-venv" \
-  --depends "flatpak" \
-  --prefix /usr/lib/krabbystrap \
-  src templates assets requirements.txt
-
-# Then add launcher + desktop manually or use packaging/build-deb.sh
-```
-
-### Manual install
+### Manual
 
 ```bash
 git clone https://github.com/krabbyorg/krabbystrap

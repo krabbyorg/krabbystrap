@@ -28,16 +28,38 @@ A [Bloxstrap](https://github.com/bloxstraplabs/bloxstrap) / [Fishstrap](https://
 
 ## Install
 
+### Official Repository (Recommended)
+
+**Setup once:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/krabbyorg/krabbystrap/main/packaging/setup-repo.sh | bash
+```
+
+**Then install:**
+
+**Arch Linux:**
+```bash
+sudo pacman -S krabbystrap
+```
+
+**Debian / Ubuntu:**
+```bash
+sudo apt install krabbystrap
+```
+
+### Alternative: Manual Install
+
 ```bash
 git clone https://github.com/krabbyorg/krabbystrap
 cd krabbystrap
 ./install.sh
 ```
 
-`install.sh` will:
-- Check Python and Flatpak are present
-- Create a `.venv` and install dependencies
-- Add a `krabbystrap.desktop` entry to your app launcher
+### AUR (Arch Linux)
+
+```bash
+yay -S krabbystrap
+```
 
 ## Usage
 

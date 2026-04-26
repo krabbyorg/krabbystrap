@@ -20,9 +20,9 @@ if [ "$(uname)" = "Linux" ]; then
 
         echo "→ Adding repository to pacman.conf..."
         echo "" | sudo tee -a /etc/pacman.conf > /dev/null
-        cat | sudo tee -a /etc/pacman.conf > /dev/null <<'EOF'
+        cat | sudo tee -a /etc/pacman.conf > /dev/null <<EOF
 [krabbystrap]
-Server = $repo/releases/download/repo/arch
+Server = $REPO_URL/releases/download/repo/arch
 SigLevel = Required
 EOF
 
@@ -38,9 +38,9 @@ EOF
         sudo curl -fsSL "$KEY_URL" | sudo gpg --dearmor --yes -o /etc/apt/keyrings/krabbystrap-repo-key.gpg
 
         echo "→ Adding repository to sources.list.d..."
-        cat | sudo tee /etc/apt/sources.list.d/krabbystrap.sources > /dev/null <<'EOF'
+        cat | sudo tee /etc/apt/sources.list.d/krabbystrap.sources > /dev/null <<EOF
 Types: deb
-URIs: https://github.com/krabbyorg/krabbystrap/releases/download/repo/debian
+URIs: $REPO_URL/releases/download/repo/debian
 Suites: stable
 Components: main
 Signed-By: /etc/apt/keyrings/krabbystrap-repo-key.gpg
